@@ -87,6 +87,7 @@ export interface CreateCandidateDto {
   accomplishments?: string;
   careerProfile?: string;
   personalDetails?: PersonalDetails;
+  password?: string;
 }
 
 export interface UpdateCandidateDto {

@@ -1,3 +1,6 @@
  - [x] Investigate update job 400 error (requires updateJobDto wrapper, requirements array)
  - [x] Review JobService.updateJob payload handling
  - [x] Patch payload construction to match backend expectations
+ - [x] Implement candidate creation request mapping (PascalCase + wrapper)
+ - [x] Extend candidate form/service to collect password and normalize key skills
+ - [x] Add success/error feedback for candidate creation flow
