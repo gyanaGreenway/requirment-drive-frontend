@@ -1,0 +1,121 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+      <i class="bi bi-person-plus me-2"></i>{{ isEditMode ? 'Edit Candidate' : 'Add New Candidate' }}
+    </h2>
+    <button class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = null"></button>
+  </div>
+
+  <!-- Candidate Form -->
+  <div *ngIf="!loading" class="card">
+    <div class="card-body">
+      <form (ngSubmit)="onSubmit()" #candidateForm="ngForm">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="firstName" 
+              name="firstName"
+              [(ngModel)]="candidate.firstName"
+              required
+              placeholder="John"
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="lastName" 
+              name="lastName"
+              [(ngModel)]="candidate.lastName"
+              required
+              placeholder="Doe"
+            />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+            <input 
+              type="email" 
+              class="form-control" 
+              id="email" 
+              name="email"
+              [(ngModel)]="candidate.email"
+              required
+              placeholder="john.doe@example.com"
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="phone" class="form-label">Phone</label>
+            <input 
+              type="tel" 
+              class="form-control" 
+              id="phone" 
+              name="phone"
+              [(ngModel)]="candidate.phone"
+              placeholder="+1 (555) 123-4567"
+            />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="resumeUrl" class="form-label">Resume URL</label>
+          <input 
+            type="url" 
+            class="form-control" 
+            id="resumeUrl" 
+            name="resumeUrl"
+            [(ngModel)]="candidate.resumeUrl"
+            placeholder="https://example.com/resume.pdf"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="keySkills" class="form-label">Key Skills <span class="text-muted">(comma separated)</span></label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="keySkills" 
+            name="keySkills"
+            [(ngModel)]="candidate.keySkills"
+            placeholder="Java, Spring Boot, Angular, SQL"
+          />
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="submitting">
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [disabled]="!isFormValid() || submitting"
+          >
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isEditMode ? 'Update Candidate' : 'Create Candidate' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,85 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+      <i class="bi bi-file-earmark-plus me-2"></i>Create Application
+    </h2>
+    <button class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = null"></button>
+  </div>
+
+  <!-- Application Form -->
+  <div class="card">
+    <div class="card-body">
+      <form (ngSubmit)="onSubmit()" #applicationForm="ngForm">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="jobId" class="form-label">Job <span class="text-danger">*</span></label>
+            <select 
+              class="form-select" 
+              id="jobId" 
+              name="jobId"
+              [(ngModel)]="application.jobId"
+              required
+              [disabled]="!!preSelectedJobId"
+            >
+              <option [value]="0">Select a job...</option>
+              <option *ngFor="let job of jobs" [value]="job.id">
+                {{ job.title }} - {{ job.department }} ({{ job.location }})
+              </option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="candidateId" class="form-label">Candidate <span class="text-danger">*</span></label>
+            <select 
+              class="form-select" 
+              id="candidateId" 
+              name="candidateId"
+              [(ngModel)]="application.candidateId"
+              required
+              [disabled]="!!preSelectedCandidateId"
+            >
+              <option [value]="0">Select a candidate...</option>
+              <option *ngFor="let candidate of candidates" [value]="candidate.id">
+                {{ candidate.firstName }} {{ candidate.lastName }} ({{ candidate.email }})
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="notes" class="form-label">Notes (Optional)</label>
+          <textarea 
+            class="form-control" 
+            id="notes" 
+            name="notes"
+            [(ngModel)]="application.notes"
+            rows="4"
+            placeholder="Add any additional notes about this application..."
+          ></textarea>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="submitting">
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [disabled]="!isFormValid() || submitting"
+          >
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+            Create Application
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+

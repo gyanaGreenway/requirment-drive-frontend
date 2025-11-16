@@ -1,0 +1,155 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+      <i class="bi bi-briefcase me-2"></i>Jobs
+    </h2>
+    <button class="btn btn-primary" (click)="createJob()">
+      <i class="bi bi-plus-circle me-2"></i>Create Job
+    </button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Search jobs by title, department, or location..."
+            [(ngModel)]="searchTerm"
+            (keyup.enter)="onSearch()"
+          />
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-outline-primary w-100" (click)="onSearch()">
+            <i class="bi bi-search me-2"></i>Search
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = null"></button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Jobs Table -->
+  <div *ngIf="!loading && jobs.length > 0" class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Department</th>
+              <th>Location</th>
+              <th>Posted Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let job of jobs">
+              <td>
+                <strong>{{ job.title }}</strong>
+              </td>
+              <td>{{ job.department }}</td>
+              <td>{{ job.location }}</td>
+              <td>{{ job.postedDate | date:'short' }}</td>
+              <td>
+                <span [class]="job.isActive ? 'badge bg-success' : 'badge bg-secondary'">
+                  {{ job.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-primary" (click)="viewJob(job.id)" title="View">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn btn-outline-secondary" (click)="editJob(job.id)" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" (click)="promptDelete(job)" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && jobs.length === 0" class="card">
+    <div class="card-body text-center py-5">
+      <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+      <p class="mt-3 text-muted">No jobs found. Create your first job posting!</p>
+      <button class="btn btn-primary" (click)="createJob()">
+        <i class="bi bi-plus-circle me-2"></i>Create Job
+      </button>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="pagedResult && pagedResult.totalPages > 1" class="mt-4">
+    <nav>
+      <ul class="pagination justify-content-center">
+        <li class="page-item" [class.disabled]="!pagedResult.hasPreviousPage">
+          <a class="page-link" (click)="onPageChange(currentPage - 1)" [class.disabled]="!pagedResult.hasPreviousPage">
+            Previous
+          </a>
+        </li>
+        <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+          <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="!pagedResult.hasNextPage">
+          <a class="page-link" (click)="onPageChange(currentPage + 1)" [class.disabled]="!pagedResult.hasNextPage">
+            Next
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <p class="text-center text-muted mt-2">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ currentPage * pageSize > pagedResult.totalCount ? pagedResult.totalCount : currentPage * pageSize }} 
+      of {{ pagedResult.totalCount }} jobs
+    </p>
+  </div>
+</div>
+
+<div *ngIf="showDeleteConfirm" class="confirm-overlay" role="dialog" aria-modal="true" aria-live="assertive">
+  <div class="confirm-card">
+    <div class="confirm-icon">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+    </div>
+    <h5 class="confirm-title">Delete Job?</h5>
+    <p class="confirm-text">
+      <strong>{{ jobPendingDelete?.title || 'This job' }}</strong> will be removed permanently. This action cannot be undone.
+    </p>
+    <div class="confirm-meta" *ngIf="jobPendingDelete">
+      <span><i class="bi bi-geo-alt me-1"></i>{{ jobPendingDelete.location }}</span>
+      <span><i class="bi bi-briefcase me-1"></i>{{ jobPendingDelete.department }}</span>
+    </div>
+    <div class="confirm-actions">
+      <button class="btn btn-outline-secondary" type="button" (click)="cancelDelete()" [disabled]="deleteInProgress">
+        Cancel
+      </button>
+      <button class="btn btn-danger" type="button" (click)="confirmDelete()" [disabled]="deleteInProgress">
+        <span *ngIf="deleteInProgress" class="spinner-border spinner-border-sm me-2"></span>
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+

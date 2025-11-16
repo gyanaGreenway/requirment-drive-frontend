@@ -1,0 +1,442 @@
+<div class="profile-wrapper">
+  <!-- Header -->
+  <div class="profile-header">
+    <h1>Complete Your Profile</h1>
+    <p>Build a comprehensive profile to get matched with better job opportunities</p>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="bi bi-exclamation-circle"></i>
+    {{ error }}
+  </div>
+  <div *ngIf="successMessage" class="alert alert-success">
+    <i class="bi bi-check-circle"></i>
+    {{ successMessage }}
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <button 
+      *ngFor="let tab of ['basic', 'resume', 'employment', 'education', 'skills', 'projects', 'personal']"
+      [class.active]="activeTab === tab"
+      (click)="setActiveTab(tab)"
+      class="tab-button"
+    >
+      {{ tab | titlecase }}
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading your profile...</p>
+  </div>
+
+  <!-- Form Content -->
+  <div *ngIf="!loading" class="form-container">
+    <!-- BASIC INFO TAB -->
+    <div *ngIf="activeTab === 'basic'" class="tab-content">
+      <h2>Basic Information</h2>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name *</label>
+          <input type="text" [(ngModel)]="firstName" placeholder="Enter first name" />
+        </div>
+        <div class="form-group">
+          <label>Last Name *</label>
+          <input type="text" [(ngModel)]="lastName" placeholder="Enter last name" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="email" placeholder="Enter email" />
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" [(ngModel)]="phone" placeholder="Enter phone number" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Resume Headline</label>
+        <input type="text" [(ngModel)]="resumeHeadline" placeholder="e.g., Senior Java Developer with 5+ years experience" />
+        <small>This will be the first thing recruiters see about you</small>
+      </div>
+    </div>
+
+    <!-- RESUME TAB -->
+    <div *ngIf="activeTab === 'resume'" class="tab-content">
+      <h2>Resume & Professional Summary</h2>
+
+      <div class="form-group">
+        <label>Profile Summary</label>
+        <textarea 
+          [(ngModel)]="profileSummary" 
+          placeholder="Write a brief summary about yourself (2-3 paragraphs)"
+          rows="6"
+        ></textarea>
+        <small>Help recruiters understand your background and career goals</small>
+      </div>
+
+      <div class="form-group">
+        <label>Career Profile</label>
+        <textarea 
+          [(ngModel)]="careerProfile" 
+          placeholder="Describe your career aspirations and what you're looking for"
+          rows="4"
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Accomplishments</label>
+        <textarea 
+          [(ngModel)]="accomplishments" 
+          placeholder="Highlight your key achievements and awards"
+          rows="4"
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- EMPLOYMENT TAB -->
+    <div *ngIf="activeTab === 'employment'" class="tab-content">
+      <h2>Employment History</h2>
+
+      <div class="section-list">
+        <div *ngFor="let emp of employment; let i = index" class="list-item">
+          <div class="item-header">
+            <h4>{{ emp.jobTitle }} at {{ emp.company }}</h4>
+            <button (click)="removeEmployment(i)" class="btn-remove">Remove</button>
+          </div>
+          <div class="item-details">
+            <p><strong>Duration:</strong> {{ formatDate(emp.startDate) }} to {{ emp.currentlyWorking ? 'Present' : formatDate(emp.endDate) }}</p>
+            <p *ngIf="emp.description"><strong>Description:</strong> {{ emp.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <button *ngIf="!showAddEmployment" (click)="showAddEmployment = true" class="btn-add">
+        <i class="bi bi-plus-circle"></i> Add Employment
+      </button>
+
+      <div *ngIf="showAddEmployment" class="form-add-section">
+        <h3>Add New Employment</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Job Title *</label>
+            <input type="text" [(ngModel)]="newEmployment.jobTitle" placeholder="e.g., Senior Developer" />
+          </div>
+          <div class="form-group">
+            <label>Company *</label>
+            <input type="text" [(ngModel)]="newEmployment.company" placeholder="e.g., Tech Corp" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Work Area</label>
+            <input type="text" [(ngModel)]="newEmployment.workArea" placeholder="e.g., Software Development" />
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" [(ngModel)]="newEmployment.currentlyWorking" />
+              Currently Working
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" [(ngModel)]="newEmployment.startDate" />
+          </div>
+          <div class="form-group" *ngIf="!newEmployment.currentlyWorking">
+            <label>End Date</label>
+            <input type="date" [(ngModel)]="newEmployment.endDate" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="newEmployment.description" placeholder="Describe your responsibilities and achievements" rows="3"></textarea>
+        </div>
+
+        <div class="form-buttons">
+          <button (click)="addEmployment()" class="btn-primary">Add Employment</button>
+          <button (click)="showAddEmployment = false" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDUCATION TAB -->
+    <div *ngIf="activeTab === 'education'" class="tab-content">
+      <h2>Education</h2>
+
+      <div class="section-list">
+        <div *ngFor="let edu of education; let i = index" class="list-item">
+          <div class="item-header">
+            <h4>{{ edu.degree }} in {{ edu.field }}</h4>
+            <button (click)="removeEducation(i)" class="btn-remove">Remove</button>
+          </div>
+          <div class="item-details">
+            <p><strong>Institution:</strong> {{ edu.institution }}</p>
+            <p><strong>Duration:</strong> {{ formatDate(edu.startDate) }} to {{ formatDate(edu.endDate) }}</p>
+            <p *ngIf="edu.grade"><strong>Grade:</strong> {{ edu.grade }}</p>
+          </div>
+        </div>
+      </div>
+
+      <button *ngIf="!showAddEducation" (click)="showAddEducation = true" class="btn-add">
+        <i class="bi bi-plus-circle"></i> Add Education
+      </button>
+
+      <div *ngIf="showAddEducation" class="form-add-section">
+        <h3>Add New Education</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Degree *</label>
+            <input type="text" [(ngModel)]="newEducation.degree" placeholder="e.g., Bachelor of Science" />
+          </div>
+          <div class="form-group">
+            <label>Field of Study</label>
+            <input type="text" [(ngModel)]="newEducation.field" placeholder="e.g., Computer Science" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Institution *</label>
+          <input type="text" [(ngModel)]="newEducation.institution" placeholder="e.g., MIT" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" [(ngModel)]="newEducation.startDate" />
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" [(ngModel)]="newEducation.endDate" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Grade/CGPA</label>
+            <input type="text" [(ngModel)]="newEducation.grade" placeholder="e.g., 8.5/10" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="newEducation.description" placeholder="Relevant coursework or achievements" rows="3"></textarea>
+        </div>
+
+        <div class="form-buttons">
+          <button (click)="addEducation()" class="btn-primary">Add Education</button>
+          <button (click)="showAddEducation = false" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKILLS TAB -->
+    <div *ngIf="activeTab === 'skills'" class="tab-content">
+      <h2>Key Skills</h2>
+
+      <p class="section-description">Add the skills that match your profile. These will be used to match you with relevant jobs.</p>
+
+      <div class="skills-container">
+        <div *ngFor="let skill of keySkills; let i = index" class="skill-tag">
+          {{ skill }}
+          <button (click)="removeKeySkill(i)" class="skill-remove">×</button>
+        </div>
+      </div>
+
+      <div *ngIf="!showAddSkill" class="skill-input-wrapper">
+        <input 
+          type="text" 
+          [(ngModel)]="newSkillInput" 
+          placeholder="Type a skill (e.g., Java, Angular, Python)"
+          (keyup.enter)="addKeySkill()"
+        />
+        <button (click)="addKeySkill()" class="btn-primary">Add Skill</button>
+      </div>
+
+      <h3 style="margin-top: 40px;">IT Skills (with Proficiency)</h3>
+
+      <div class="section-list">
+        <div *ngFor="let skill of itSkills; let i = index" class="list-item">
+          <div class="item-header">
+            <h4>{{ skill.skill }}</h4>
+            <button (click)="removeITSkill(i)" class="btn-remove">Remove</button>
+          </div>
+          <div class="item-details">
+            <p><strong>Proficiency:</strong> {{ skill.proficiency }}</p>
+          </div>
+        </div>
+      </div>
+
+      <button *ngIf="!showAddSkill" (click)="showAddSkill = true" class="btn-add">
+        <i class="bi bi-plus-circle"></i> Add IT Skill
+      </button>
+
+      <div *ngIf="showAddSkill" class="form-add-section">
+        <h3>Add IT Skill</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Skill Name *</label>
+            <input type="text" [(ngModel)]="newITSkill.skill" placeholder="e.g., Java, Spring Boot, Angular" />
+          </div>
+          <div class="form-group">
+            <label>Proficiency Level</label>
+            <select [(ngModel)]="newITSkill.proficiency">
+              <option>Beginner</option>
+              <option>Intermediate</option>
+              <option>Advanced</option>
+              <option>Expert</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-buttons">
+          <button (click)="addITSkill()" class="btn-primary">Add IT Skill</button>
+          <button (click)="showAddSkill = false" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECTS TAB -->
+    <div *ngIf="activeTab === 'projects'" class="tab-content">
+      <h2>Projects</h2>
+
+      <div class="section-list">
+        <div *ngFor="let project of projects; let i = index" class="list-item">
+          <div class="item-header">
+            <h4>{{ project.title }}</h4>
+            <button (click)="removeProject(i)" class="btn-remove">Remove</button>
+          </div>
+          <div class="item-details">
+            <p>{{ project.description }}</p>
+            <p *ngIf="project.link"><strong>Link:</strong> <a [href]="project.link" target="_blank">{{ project.link }}</a></p>
+            <p><strong>Duration:</strong> {{ formatDate(project.startDate) }} to {{ formatDate(project.endDate) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <button *ngIf="!showAddProject" (click)="showAddProject = true" class="btn-add">
+        <i class="bi bi-plus-circle"></i> Add Project
+      </button>
+
+      <div *ngIf="showAddProject" class="form-add-section">
+        <h3>Add New Project</h3>
+        
+        <div class="form-group">
+          <label>Project Title *</label>
+          <input type="text" [(ngModel)]="newProject.title" placeholder="e.g., E-commerce Platform" />
+        </div>
+
+        <div class="form-group">
+          <label>Description *</label>
+          <textarea [(ngModel)]="newProject.description" placeholder="Describe the project and your role" rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Project Link</label>
+          <input type="url" [(ngModel)]="newProject.link" placeholder="https://github.com/..." />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" [(ngModel)]="newProject.startDate" />
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" [(ngModel)]="newProject.endDate" />
+          </div>
+        </div>
+
+        <div class="form-buttons">
+          <button (click)="addProject()" class="btn-primary">Add Project</button>
+          <button (click)="showAddProject = false" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERSONAL DETAILS TAB -->
+    <div *ngIf="activeTab === 'personal'" class="tab-content">
+      <h2>Personal Details</h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" [(ngModel)]="personalDetails.dateOfBirth" />
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select [(ngModel)]="personalDetails.gender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nationality</label>
+          <input type="text" [(ngModel)]="personalDetails.nationality" placeholder="e.g., Indian" />
+        </div>
+        <div class="form-group">
+          <label>Marital Status</label>
+          <select [(ngModel)]="personalDetails.maritalStatus">
+            <option value="Single">Single</option>
+            <option value="Married">Married</option>
+            <option value="Divorced">Divorced</option>
+            <option value="Widowed">Widowed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Address</label>
+        <input type="text" [(ngModel)]="personalDetails.address" placeholder="Street address" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" [(ngModel)]="personalDetails.city" placeholder="City" />
+        </div>
+        <div class="form-group">
+          <label>State/Province</label>
+          <input type="text" [(ngModel)]="personalDetails.state" placeholder="State" />
+        </div>
+        <div class="form-group">
+          <label>Zip Code</label>
+          <input type="text" [(ngModel)]="personalDetails.zipCode" placeholder="Zip code" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Country</label>
+        <input type="text" [(ngModel)]="personalDetails.country" placeholder="Country" />
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <button (click)="saveProfile()" [disabled]="saving" class="btn-save">
+        {{ saving ? 'Saving...' : 'Save Profile' }}
+      </button>
+      <button (click)="navigateToDashboard()" class="btn-secondary">
+        Back to Dashboard
+      </button>
+    </div>
+  </div>
+</div>

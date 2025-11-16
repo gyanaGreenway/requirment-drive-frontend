@@ -1,0 +1,81 @@
+<div class="container-fluid py-4">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = null"></button>
+  </div>
+
+  <!-- Candidate Details -->
+  <div *ngIf="!loading && candidate" class="card">
+    <div class="card-header bg-primary text-white">
+      <div class="d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">{{ candidate.firstName }} {{ candidate.lastName }}</h3>
+        <div>
+          <button class="btn btn-light btn-sm me-2" (click)="editCandidate()">
+            <i class="bi bi-pencil me-1"></i>Edit
+          </button>
+          <button class="btn btn-danger btn-sm" (click)="deleteCandidate()">
+            <i class="bi bi-trash me-1"></i>Delete
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <h5 class="text-muted mb-3">Contact Information</h5>
+          <table class="table table-borderless">
+            <tr>
+              <td width="40%"><strong>Email:</strong></td>
+              <td>{{ candidate.email }}</td>
+            </tr>
+            <tr *ngIf="candidate.phone">
+              <td><strong>Phone:</strong></td>
+              <td>{{ candidate.phone }}</td>
+            </tr>
+            <tr *ngIf="candidate.resumeUrl">
+              <td><strong>Resume:</strong></td>
+              <td>
+                <a [href]="candidate.resumeUrl" target="_blank" class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-file-earmark-pdf me-1"></i>View Resume
+                </a>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="col-md-6">
+          <h5 class="text-muted mb-3">Skills & Experience</h5>
+          <div *ngIf="candidate.skills" class="mb-3">
+            <strong>Skills:</strong>
+            <div class="mt-2">
+              <span class="badge bg-info me-2">{{ candidate.skills }}</span>
+            </div>
+          </div>
+          <div *ngIf="candidate.experience">
+            <strong>Experience:</strong>
+            <p class="text-muted mt-2" style="white-space: pre-wrap;">{{ candidate.experience }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" (click)="backToList()">
+          <i class="bi bi-arrow-left me-2"></i>Back to Candidates
+        </button>
+        <a [routerLink]="['/dashboard/applications/create']" [queryParams]="{candidateId: candidate.id}" class="btn btn-success">
+          <i class="bi bi-file-earmark-plus me-2"></i>Create Application
+        </a>
+        <button class="btn btn-primary" (click)="editCandidate()">
+          <i class="bi bi-pencil me-2"></i>Edit Candidate
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

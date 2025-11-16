@@ -1,0 +1,19 @@
+<div class="toast-container" aria-live="polite" aria-atomic="true">
+  <div *ngFor="let t of (toasts$ | async); trackBy: trackById" [ngClass]="classFor(t)">
+    <div class="toast-content">
+      <div class="toast-icon" [ngClass]="t.type">
+        <i [ngClass]="{
+          'bi bi-check-circle-fill': t.type === 'success',
+          'bi bi-x-circle-fill': t.type === 'error',
+          'bi bi-exclamation-circle-fill': t.type === 'warning',
+          'bi bi-info-circle-fill': t.type === 'info'
+        }"></i>
+      </div>
+      <div class="toast-body">
+        <span class="toast-title">{{ t.type | titlecase }}</span>
+        <span class="toast-message">{{ t.message }}</span>
+      </div>
+      <button class="toast-close" (click)="close(t.id)" aria-label="Close">×</button>
+    </div>
+  </div>
+</div>

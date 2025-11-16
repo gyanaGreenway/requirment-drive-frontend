@@ -1,0 +1,237 @@
+<div class="candidate-dashboard-wrapper">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <h1>Dashboard</h1>
+    <div class="header-right">
+      <div class="user-profile-wrapper" (click)="toggleDropdown()">
+        <span class="user-name">{{ getUserName() }}</span>
+        <div class="user-avatar">{{ getUserInitials() }}</div>
+        <i class="bi bi-chevron-down dropdown-icon"></i>
+      </div>
+      <!-- Profile Dropdown -->
+      <div class="profile-dropdown" [class.show]="showDropdown">
+        <div class="dropdown-header">
+          <div class="dropdown-avatar">{{ getUserInitials() }}</div>
+          <div class="dropdown-user-info">
+            <div class="dropdown-name">{{ getUserName() }}</div>
+            <div class="dropdown-email">{{ getUserEmail() }}</div>
+          </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" (click)="navigateToProfile()">
+          <i class="bi bi-person"></i>
+          <span>My Profile</span>
+        </a>
+        <a class="dropdown-item" (click)="navigateToSettings()">
+          <i class="bi bi-gear"></i>
+          <span>Settings</span>
+        </a>
+        <a class="dropdown-item" (click)="navigateToChangePassword()">
+          <i class="bi bi-key"></i>
+          <span>Change Password</span>
+        </a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item logout-item" (click)="logout()">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="dashboard-content">
+        <!-- Quick Links Section -->
+        <div class="quick-links-section">
+          <div class="quick-links-header">
+            <h3>Quick Links</h3>
+            <p>Access your profile, applications, jobs, and notifications</p>
+          </div>
+          <div class="quick-links-grid">
+            <a routerLink="/candidate-profile" class="quick-link-card">
+              <span class="quick-link-icon">👤</span>
+              <span class="quick-link-label">My Profile</span>
+            </a>
+            <a routerLink="/candidate-dashboard" class="quick-link-card">
+              <span class="quick-link-icon">📊</span>
+              <span class="quick-link-label">Applications</span>
+            </a>
+            <a routerLink="/dashboard/jobs" class="quick-link-card">
+              <span class="quick-link-icon">💼</span>
+              <span class="quick-link-label">Browse Jobs</span>
+            </a>
+            <a routerLink="/notifications" class="quick-link-card">
+              <span class="quick-link-icon">🔔</span>
+              <span class="quick-link-label">Notifications</span>
+            </a>
+          </div>
+        </div>
+    <!-- Error Message -->
+    <div *ngIf="error" class="alert alert-danger">
+      <i class="bi bi-exclamation-circle"></i>
+      {{ error }}
+    </div>
+
+    <div class="content-grid">
+      <!-- Left Panel: Applied Jobs List -->
+      <div class="applied-jobs-panel">
+        <div class="panel-header">
+          <h2>Applied Jobs</h2>
+          <div class="filter-controls">
+            <select 
+              [(ngModel)]="selectedStatus"
+              (change)="selectApplication(null)"
+              class="status-filter"
+            >
+              <option value="">All Statuses</option>
+              <option value="New">Under Review</option>
+              <option value="Shortlisted">Interview Scheduled</option>
+              <option value="Hired">Offer</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading your applications...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!loading && getFilteredApplications().length === 0" class="empty-state">
+          <p>📭 No applications found</p>
+          <a routerLink="/dashboard/jobs" class="link-btn">Browse Jobs</a>
+        </div>
+
+        <!-- Jobs Table -->
+        <div *ngIf="!loading && getFilteredApplications().length > 0" class="jobs-table">
+          <div class="table-header">
+            <div class="col-title">Job Title</div>
+            <div class="col-company">Company</div>
+            <div class="col-date">Applied Date</div>
+            <div class="col-status">Status</div>
+          </div>
+
+          <div 
+            *ngFor="let application of getFilteredApplications()"
+            class="table-row"
+            [class.active]="selectedApplication?.id === application.id"
+            (click)="selectApplication(application)"
+          >
+            <div class="col-title">
+              <div class="job-title">{{ getJobTitle(application.jobId) }}</div>
+              <div class="job-company">{{ getJobCompany(application.jobId) }}</div>
+            </div>
+            <div class="col-company">{{ getJobCompany(application.jobId) }}</div>
+            <div class="col-date">{{ formatDate(application.appliedDate) }}</div>
+            <div class="col-status">
+              <span class="status-badge" [ngClass]="'status-' + getStatusKey(application.status)">
+                {{ getStatusLabel(application.status) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Application Details -->
+      <div class="application-details-panel">
+        <div *ngIf="!selectedApplication" class="no-selection">
+          <div class="empty-message">
+            <p>👈 Select an application to view details</p>
+          </div>
+        </div>
+
+        <div *ngIf="selectedApplication" class="details-card">
+          <!-- Job Header -->
+          <div class="details-header">
+            <div>
+              <h3 class="detail-title">{{ getJobTitle(selectedApplication.jobId) }}</h3>
+              <p class="detail-company">{{ getJobCompany(selectedApplication.jobId) }}</p>
+              <p class="applied-label">Applied On</p>
+            </div>
+            <span class="status-badge-large" [ngClass]="'status-' + getStatusKey(selectedApplication.status)">
+              {{ getStatusLabel(selectedApplication.status) }}
+            </span>
+          </div>
+
+          <!-- Timeline -->
+          <div class="timeline-section">
+            <h4>Application Timeline</h4>
+            
+            <!-- Application Submitted -->
+            <div class="timeline-item completed">
+              <div class="timeline-dot">
+                <i class="bi bi-check2-circle"></i>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-status">Application Submitted</div>
+                <div class="timeline-date">{{ formatDate(selectedApplication.appliedDate) }}</div>
+              </div>
+            </div>
+
+            <!-- Resume Viewed -->
+            <div class="timeline-item" [class.completed]="selectedApplication.status !== 'New'">
+              <div class="timeline-dot">
+                <i class="bi bi-check2-circle"></i>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-status">Resume Viewed</div>
+                <div class="timeline-date" *ngIf="selectedApplication.status !== 'New'">
+                  {{ getStatusChangeDate() }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Under Review -->
+            <div class="timeline-item" [class.completed]="selectedApplication.status === 'Shortlisted' || selectedApplication.status === 'Hired'">
+              <div class="timeline-dot">
+                <i [ngClass]="selectedApplication.status === 'Shortlisted' || selectedApplication.status === 'Hired' 
+                  ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-status">Under Review</div>
+                <div class="timeline-date" *ngIf="selectedApplication.status === 'Shortlisted' || selectedApplication.status === 'Hired'">
+                  {{ getStatusChangeDate() }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Interview Pending -->
+            <div class="timeline-item" [class.completed]="selectedApplication.status === 'Hired'">
+              <div class="timeline-dot">
+                <i [ngClass]="selectedApplication.status === 'Hired' 
+                  ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-status">Interview Pending</div>
+                <div class="timeline-date" *ngIf="selectedApplication.status === 'Hired'">
+                  {{ getStatusChangeDate() }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes Section -->
+          <div *ngIf="selectedApplication.notes" class="notes-section">
+            <h4>Notes from HR</h4>
+            <div class="notes-content">{{ selectedApplication.notes }}</div>
+          </div>
+
+          <!-- Status History -->
+          <div *ngIf="selectedApplication.statusHistory && selectedApplication.statusHistory.length > 0" class="history-section">
+            <h4>Status History</h4>
+            <div class="history-list">
+              <div *ngFor="let history of selectedApplication.statusHistory" class="history-item">
+                <div class="history-date">{{ formatDate(history.changedDate) }}</div>
+                <div class="history-status">{{ history.status }}</div>
+                <div *ngIf="history.notes" class="history-notes">{{ history.notes }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

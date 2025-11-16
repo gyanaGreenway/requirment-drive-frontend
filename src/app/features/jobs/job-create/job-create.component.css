@@ -1,0 +1,65 @@
+.redirect-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(15, 23, 42, 0.35);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1200;
+	text-align: center;
+}
+
+.redirect-card {
+	background: #fff;
+	color: #1f2937;
+	padding: 28px 32px;
+	border-radius: 16px;
+	box-shadow: 0 18px 48px rgba(15, 23, 42, 0.22);
+	min-width: 280px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+}
+
+.redirect-icon {
+	width: 56px;
+	height: 56px;
+	border-radius: 50%;
+	background: rgba(34, 197, 94, 0.12);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #198754;
+	font-size: 32px;
+}
+
+.redirect-title {
+	margin: 0;
+	font-size: 1.125rem;
+	font-weight: 600;
+}
+
+.redirect-text {
+	margin: 0;
+	font-size: 0.975rem;
+	color: #4b5563;
+}
+
+.redirect-spinner {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 8px;
+}
+
+.redirect-spinner .spinner-border {
+	width: 2.25rem;
+	height: 2.25rem;
+}
+
+.redirect-count {
+	font-size: 0.95rem;
+	font-weight: 500;
+	color: #2563eb;
+}

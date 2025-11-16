@@ -1,0 +1,125 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+      <i class="bi bi-people me-2"></i>Candidates
+    </h2>
+    <button class="btn btn-primary" (click)="createCandidate()">
+      <i class="bi bi-plus-circle me-2"></i>Add Candidate
+    </button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Search candidates by name, email, or skills..."
+            [(ngModel)]="searchTerm"
+            (keyup.enter)="onSearch()"
+          />
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-outline-primary w-100" (click)="onSearch()">
+            <i class="bi bi-search me-2"></i>Search
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = null"></button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Candidates Table -->
+  <div *ngIf="!loading && candidates.length > 0" class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Skills</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let candidate of candidates">
+              <td>
+                <strong>{{ candidate.firstName }} {{ candidate.lastName }}</strong>
+              </td>
+              <td>{{ candidate.email }}</td>
+              <td>{{ candidate.phone || 'N/A' }}</td>
+              <td>
+                <span class="badge bg-info">{{ candidate.skills || 'N/A' }}</span>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-primary" (click)="viewCandidate(candidate.id)" title="View">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn btn-outline-secondary" (click)="editCandidate(candidate.id)" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" (click)="deleteCandidate(candidate.id)" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && candidates.length === 0" class="card">
+    <div class="card-body text-center py-5">
+      <i class="bi bi-person-x" style="font-size: 3rem; color: #ccc;"></i>
+      <p class="mt-3 text-muted">No candidates found. Add your first candidate!</p>
+      <button class="btn btn-primary" (click)="createCandidate()">
+        <i class="bi bi-plus-circle me-2"></i>Add Candidate
+      </button>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="pagedResult && pagedResult.totalPages > 1" class="mt-4">
+    <nav>
+      <ul class="pagination justify-content-center">
+        <li class="page-item" [class.disabled]="!pagedResult.hasPreviousPage">
+          <a class="page-link" (click)="onPageChange(currentPage - 1)" [class.disabled]="!pagedResult.hasPreviousPage">
+            Previous
+          </a>
+        </li>
+        <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+          <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="!pagedResult.hasNextPage">
+          <a class="page-link" (click)="onPageChange(currentPage + 1)" [class.disabled]="!pagedResult.hasNextPage">
+            Next
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <p class="text-center text-muted mt-2">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ currentPage * pageSize > pagedResult.totalCount ? pagedResult.totalCount : currentPage * pageSize }} 
+      of {{ pagedResult.totalCount }} candidates
+    </p>
+  </div>
+</div>

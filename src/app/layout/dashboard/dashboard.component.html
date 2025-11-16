@@ -1,0 +1,299 @@
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo-section">
+      <div class="logo-icon">📊</div>
+      <h2 class="logo">RecruitmentDrive</h2>
+    </div>
+    <nav>
+      <ul>
+        <li>
+          <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+            <span class="icon"><i class="bi bi-speedometer2"></i></span>
+            <span class="text">Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/dashboard/jobs" routerLinkActive="active" class="nav-link">
+            <span class="icon"><i class="bi bi-briefcase"></i></span>
+            <span class="text">Jobs</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/dashboard/candidates" routerLinkActive="active" class="nav-link">
+            <span class="icon"><i class="bi bi-people"></i></span>
+            <span class="text">Candidates</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/dashboard/applications" routerLinkActive="active" class="nav-link">
+            <span class="icon"><i class="bi bi-file-earmark-text"></i></span>
+            <span class="text">Applications</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Navigation / Header -->
+    <header class="topbar">
+      <div class="header-left">
+        <h1>Dashboard</h1>
+        <p class="subtitle">Welcome to your recruitment management system</p>
+      </div>
+      <div class="user-info">
+        <div class="notification-badge">
+          <i class="bi bi-bell"></i>
+          <span class="badge">3</span>
+        </div>
+        <div class="user-profile" (click)="toggleDropdown()">
+          <div class="profile-avatar">{{ getUserInitials() }}</div>
+          <div class="user-details">
+            <span class="user-name">{{ getUserName() }}</span>
+            <span class="user-role">{{ getUserRole() }}</span>
+          </div>
+          <i class="bi bi-chevron-down dropdown-icon"></i>
+        </div>
+        <!-- Profile Dropdown -->
+        <div class="profile-dropdown" [class.show]="showDropdown">
+          <div class="dropdown-header">
+            <div class="dropdown-avatar">{{ getUserInitials() }}</div>
+            <div class="dropdown-user-info">
+              <div class="dropdown-name">{{ getUserName() }}</div>
+              <div class="dropdown-email">{{ getUserEmail() }}</div>
+            </div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" (click)="navigateToProfile()">
+            <i class="bi bi-person"></i>
+            <span>My Profile</span>
+          </a>
+          <a class="dropdown-item" (click)="navigateToSettings()">
+            <i class="bi bi-gear"></i>
+            <span>Settings</span>
+          </a>
+          <a class="dropdown-item" (click)="navigateToChangePassword()">
+            <i class="bi bi-key"></i>
+            <span>Change Password</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item logout-item" (click)="logout()">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <section class="content">
+      <!-- Show overview only when on dashboard root -->
+      <div *ngIf="isDashboardRoot()">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+          <h2>Your Recruitment Overview</h2>
+          <p>Track and manage your recruitment pipeline at a glance</p>
+        </div>
+
+        <!-- Stats Cards Grid -->
+        <div class="stats-grid">
+          <div class="stat-card stat-card-jobs">
+            <div class="card-header-bg"></div>
+            <div class="card-icon">
+              <i class="bi bi-briefcase"></i>
+            </div>
+            <div class="card-content">
+              <div class="card-value">{{ stats.totalJobs }}</div>
+              <div class="card-label">Total Jobs</div>
+            </div>
+            <div class="card-footer">Active postings</div>
+          </div>
+
+          <div class="stat-card stat-card-active">
+            <div class="card-header-bg"></div>
+            <div class="card-icon">
+              <i class="bi bi-lightning-charge"></i>
+            </div>
+            <div class="card-content">
+              <div class="card-value">{{ stats.activeJobs }}</div>
+              <div class="card-label">Active Jobs</div>
+            </div>
+            <div class="card-footer">Currently open</div>
+          </div>
+
+          <div class="stat-card stat-card-candidates">
+            <div class="card-header-bg"></div>
+            <div class="card-icon">
+              <i class="bi bi-people"></i>
+            </div>
+            <div class="card-content">
+              <div class="card-value">{{ stats.totalCandidates }}</div>
+              <div class="card-label">Candidates</div>
+            </div>
+            <div class="card-footer">In system</div>
+          </div>
+
+          <div class="stat-card stat-card-applications">
+            <div class="card-header-bg"></div>
+            <div class="card-icon">
+              <i class="bi bi-file-earmark"></i>
+            </div>
+            <div class="card-content">
+              <div class="card-value">{{ stats.totalApplications }}</div>
+              <div class="card-label">Applications</div>
+            </div>
+            <div class="card-footer">Total received</div>
+          </div>
+        </div>
+
+        <!-- Application Status Section -->
+        <div class="status-section">
+          <div class="section-header">
+            <h3>Application Pipeline Status</h3>
+            <p>Current application distribution across statuses</p>
+          </div>
+          <div class="status-grid">
+            <div class="status-item status-new">
+              <div class="status-icon">📥</div>
+              <div class="status-info">
+                <div class="status-count">{{ stats.newApplications }}</div>
+                <div class="status-label">New</div>
+              </div>
+              <div class="status-bar">
+                <div class="progress-fill" [style.width.%]="(stats.newApplications / (stats.totalApplications || 1)) * 100"></div>
+              </div>
+            </div>
+            <div class="status-item status-shortlisted">
+              <div class="status-icon">⭐</div>
+              <div class="status-info">
+                <div class="status-count">{{ stats.shortlistedApplications }}</div>
+                <div class="status-label">Shortlisted</div>
+              </div>
+              <div class="status-bar">
+                <div class="progress-fill" [style.width.%]="(stats.shortlistedApplications / (stats.totalApplications || 1)) * 100"></div>
+              </div>
+            </div>
+            <div class="status-item status-hired">
+              <div class="status-icon">✅</div>
+              <div class="status-info">
+                <div class="status-count">{{ stats.hiredApplications }}</div>
+                <div class="status-label">Hired</div>
+              </div>
+              <div class="status-bar">
+                <div class="progress-fill" [style.width.%]="(stats.hiredApplications / (stats.totalApplications || 1)) * 100"></div>
+              </div>
+            </div>
+            <div class="status-item status-rejected">
+              <div class="status-icon">❌</div>
+              <div class="status-info">
+                <div class="status-count">{{ stats.rejectedApplications }}</div>
+                <div class="status-label">Rejected</div>
+              </div>
+              <div class="status-bar">
+                <div class="progress-fill" [style.width.%]="(stats.rejectedApplications / (stats.totalApplications || 1)) * 100"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="actions-section">
+          <div class="section-header">
+            <h3>Quick Actions</h3>
+            <p>Manage your recruitment workflow</p>
+          </div>
+          <div class="actions-grid">
+            <a routerLink="/dashboard/jobs/create" class="action-btn action-create">
+              <div class="btn-icon">
+                <i class="bi bi-plus-circle"></i>
+              </div>
+              <div class="btn-content">
+                <h4>Create Job</h4>
+                <p>Post a new job opening</p>
+              </div>
+            </a>
+            <a routerLink="/dashboard/candidates/create" class="action-btn action-add">
+              <div class="btn-icon">
+                <i class="bi bi-person-plus"></i>
+              </div>
+              <div class="btn-content">
+                <h4>Add Candidate</h4>
+                <p>Register a new candidate</p>
+              </div>
+            </a>
+            <a routerLink="/dashboard/applications" class="action-btn action-view">
+              <div class="btn-icon">
+                <i class="bi bi-file-earmark-text"></i>
+              </div>
+              <div class="btn-content">
+                <h4>View Applications</h4>
+                <p>Review all applications</p>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Recent Job Applications Table -->
+        <div class="applications-section">
+          <div class="section-header">
+            <h3>Recent Job Applications</h3>
+            <p>Latest applications from candidates</p>
+          </div>
+          <table class="applications-table">
+            <thead>
+              <tr>
+                <th>Job Title</th>
+                <th>Candidate</th>
+                <th>Applied Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="job-title-cell">Frontend Developer</td>
+                <td class="candidate-name">Robert Smith</td>
+                <td class="date-cell">14 Nov 2025</td>
+                <td><span class="status-badge status-new">New</span></td>
+                <td><a href="#" class="action-link">View</a></td>
+              </tr>
+              <tr>
+                <td class="job-title-cell">.NET Developer</td>
+                <td class="candidate-name">Emind Johnson</td>
+                <td class="date-cell">13 Nov 2025</td>
+                <td><span class="status-badge status-shortlisted">Shortlisted</span></td>
+                <td><a href="#" class="action-link">View</a></td>
+              </tr>
+              <tr>
+                <td class="job-title-cell">UI/UX Designer</td>
+                <td class="candidate-name">Michael Brown</td>
+                <td class="date-cell">12 Nov 2025</td>
+                <td><span class="status-badge status-hired">Hired</span></td>
+                <td><a href="#" class="action-link">View</a></td>
+              </tr>
+              <tr>
+                <td class="job-title-cell">Data Scientist</td>
+                <td class="candidate-name">Sarah Martinez</td>
+                <td class="date-cell">12 Nov 2025</td>
+                <td><span class="status-badge status-shortlisted">Shortlisted</span></td>
+                <td><a href="#" class="action-link">View</a></td>
+              </tr>
+              <tr>
+                <td class="job-title-cell">Product Manager</td>
+                <td class="candidate-name">Jessica Williams</td>
+                <td class="date-cell">11 Nov 2025</td>
+                <td><span class="status-badge status-new">New</span></td>
+                <td><a href="#" class="action-link">View</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Router Outlet for Child Routes -->
+      <router-outlet></router-outlet>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,8 @@
+{
+  "/recruitment/api/v1": {
+    "target": "https://localhost:57913",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

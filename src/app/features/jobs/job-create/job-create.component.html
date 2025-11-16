@@ -1,0 +1,186 @@
+<div *ngIf="showRedirectLoader" class="redirect-overlay" role="status" aria-live="polite">
+  <div class="redirect-card">
+    <div class="redirect-icon">
+      <i class="bi bi-check-circle-fill"></i>
+    </div>
+    <h5 class="redirect-title">Success</h5>
+    <p class="redirect-text">{{ redirectSummary || 'Redirecting to jobs list...' }}</p>
+    <div class="redirect-spinner">
+      <div class="spinner-border text-success" role="presentation"></div>
+      <span class="redirect-count">Redirecting in {{ (toastDurationMs / 1000) | number:'1.0-0' }}s</span>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+      <i class="bi bi-briefcase me-2"></i>{{ isEditMode ? 'Edit Job' : 'Create New Job' }}
+    </h2>
+    <button class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = null"></button>
+  </div>
+
+  <!-- Debug: outgoing payload -->
+  <div *ngIf="debugPayload" class="mt-3">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="card-title">Debug: Outgoing payload</h6>
+        <pre style="max-height:200px;overflow:auto">{{ debugPayload | json }}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Debug: backend raw error -->
+  <div *ngIf="lastBackendError" class="mt-3">
+    <div class="card border-danger">
+      <div class="card-body">
+        <h6 class="card-title text-danger">Debug: Backend error</h6>
+        <pre style="max-height:200px;overflow:auto">{{ lastBackendError | json }}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Job Form -->
+  <div *ngIf="!loading" class="card">
+    <div class="card-body">
+      <form (ngSubmit)="onSubmit()" #jobForm="ngForm">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="title" class="form-label">Job Title <span class="text-danger">*</span></label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="title" 
+              name="title"
+              [(ngModel)]="job.title"
+              required
+              placeholder="e.g., Senior Software Engineer"
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="department" class="form-label">Department <span class="text-danger">*</span></label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="department" 
+              name="department"
+              [(ngModel)]="job.department"
+              required
+              placeholder="e.g., Engineering"
+            />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="location" class="form-label">Location <span class="text-danger">*</span></label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="location" 
+              name="location"
+              [(ngModel)]="job.location"
+              required
+              placeholder="e.g., New York, NY"
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="salaryRange" class="form-label">Salary Range</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="salaryRange" 
+              name="salaryRange"
+              [(ngModel)]="job.salaryRange"
+              placeholder="e.g., $80,000 - $120,000"
+            />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="description" class="form-label">Job Description <span class="text-danger">*</span></label>
+          <textarea 
+            class="form-control" 
+            id="description" 
+            name="description"
+            [(ngModel)]="job.description"
+            rows="6"
+            required
+            placeholder="Describe the role, responsibilities, and what you're looking for..."
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="requirements" class="form-label">Requirements</label>
+          <textarea 
+            class="form-control" 
+            id="requirements" 
+            name="requirements"
+            [(ngModel)]="job.requirements"
+            rows="4"
+            placeholder="List the required skills, experience, and qualifications..."
+          ></textarea>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="closingDate" class="form-label">Closing Date</label>
+            <input 
+              type="date" 
+              class="form-control" 
+              id="closingDate" 
+              name="closingDate"
+              [value]="job.closingDate ? (job.closingDate | date:'yyyy-MM-dd') : ''"
+              (input)="onClosingDateChange($any($event.target).value)"
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Status</label>
+            <div class="form-check form-switch mt-2">
+              <input 
+                class="form-check-input" 
+                type="checkbox" 
+                id="isActive" 
+                name="isActive"
+                [(ngModel)]="job.isActive"
+              />
+              <label class="form-check-label" for="isActive">
+                {{ job.isActive ? 'Active' : 'Inactive' }}
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="submitting">
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [disabled]="!isFormValid() || submitting"
+          >
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isEditMode ? 'Update Job' : 'Create Job' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+

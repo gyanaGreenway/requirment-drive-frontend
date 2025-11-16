@@ -1,0 +1,3 @@
+ - [x] Investigate update job 400 error (requires updateJobDto wrapper, requirements array)
+ - [x] Review JobService.updateJob payload handling
+ - [x] Patch payload construction to match backend expectations
