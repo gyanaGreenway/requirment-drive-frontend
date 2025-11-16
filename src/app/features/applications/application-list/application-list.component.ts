@@ -6,6 +6,7 @@ import { ApplicationService } from '../../../core/services/application.service';
 import { JobService } from '../../../core/services/job.service';
 import { CandidateService } from '../../../core/services/candidate.service';
 import { JobApplication, ApplicationFilter, ApplicationStatus } from '../../../shared/models/application.model';
+import { APPLICATION_STATUS_LABELS } from '../../../shared/models/application-status-labels';
 import { PagedResult } from '../../../shared/models/paged-result.model';
 import { Job } from '../../../shared/models/job.model';
 import { Candidate } from '../../../shared/models/candidate.model';
@@ -30,7 +31,12 @@ export class ApplicationListComponent implements OnInit {
     sortOrder: 'desc'
   };
   
-  statusOptions = Object.values(ApplicationStatus);
+  statusOptions = [
+    { value: ApplicationStatus.New, label: APPLICATION_STATUS_LABELS[ApplicationStatus.New] },
+    { value: ApplicationStatus.Shortlisted, label: APPLICATION_STATUS_LABELS[ApplicationStatus.Shortlisted] },
+    { value: ApplicationStatus.Rejected, label: APPLICATION_STATUS_LABELS[ApplicationStatus.Rejected] },
+    { value: ApplicationStatus.Hired, label: APPLICATION_STATUS_LABELS[ApplicationStatus.Hired] }
+  ];
   loading = false;
   error: string | null = null;
 
@@ -133,6 +139,11 @@ export class ApplicationListComponent implements OnInit {
       default:
         return 'badge bg-secondary';
     }
+  }
+
+  getStatusLabel(status: ApplicationStatus | undefined): string {
+    if (!status) return 'Unknown';
+    return APPLICATION_STATUS_LABELS[status] ?? String(status);
   }
 
   getPageNumbers(): number[] {

@@ -68,5 +68,39 @@ export class CandidateDetailsComponent implements OnInit {
   backToList(): void {
     this.router.navigate(['/dashboard/candidates']);
   }
+
+  getSkills(): string[] {
+    if (!this.candidate) return [];
+    
+    // Prefer keySkills if available
+    if (this.candidate.keySkills) {
+      if (Array.isArray(this.candidate.keySkills)) {
+        return this.candidate.keySkills.filter(Boolean);
+      }
+      // Handle keySkills as string
+      if (typeof this.candidate.keySkills === 'string') {
+        const trimmed = this.candidate.keySkills.trim();
+        if (trimmed) {
+          return trimmed
+            .split(/[,|]/)
+            .map((skill: string) => skill.trim())
+            .filter(Boolean);
+        }
+      }
+    }
+    
+    // Fallback to legacy skills field
+    if (this.candidate.skills) {
+      const skillsString = Array.isArray(this.candidate.skills) 
+        ? this.candidate.skills.join(',')
+        : String(this.candidate.skills);
+      return skillsString
+        .split(/[,|]/)
+        .map((skill: string) => skill.trim())
+        .filter(Boolean);
+    }
+    
+    return [];
+  }
 }
 

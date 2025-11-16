@@ -241,54 +241,59 @@
             <h3>Recent Job Applications</h3>
             <p>Latest applications from candidates</p>
           </div>
-          <table class="applications-table">
-            <thead>
-              <tr>
-                <th>Job Title</th>
-                <th>Candidate</th>
-                <th>Applied Date</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="job-title-cell">Frontend Developer</td>
-                <td class="candidate-name">Robert Smith</td>
-                <td class="date-cell">14 Nov 2025</td>
-                <td><span class="status-badge status-new">New</span></td>
-                <td><a href="#" class="action-link">View</a></td>
-              </tr>
-              <tr>
-                <td class="job-title-cell">.NET Developer</td>
-                <td class="candidate-name">Emind Johnson</td>
-                <td class="date-cell">13 Nov 2025</td>
-                <td><span class="status-badge status-shortlisted">Shortlisted</span></td>
-                <td><a href="#" class="action-link">View</a></td>
-              </tr>
-              <tr>
-                <td class="job-title-cell">UI/UX Designer</td>
-                <td class="candidate-name">Michael Brown</td>
-                <td class="date-cell">12 Nov 2025</td>
-                <td><span class="status-badge status-hired">Hired</span></td>
-                <td><a href="#" class="action-link">View</a></td>
-              </tr>
-              <tr>
-                <td class="job-title-cell">Data Scientist</td>
-                <td class="candidate-name">Sarah Martinez</td>
-                <td class="date-cell">12 Nov 2025</td>
-                <td><span class="status-badge status-shortlisted">Shortlisted</span></td>
-                <td><a href="#" class="action-link">View</a></td>
-              </tr>
-              <tr>
-                <td class="job-title-cell">Product Manager</td>
-                <td class="candidate-name">Jessica Williams</td>
-                <td class="date-cell">11 Nov 2025</td>
-                <td><span class="status-badge status-new">New</span></td>
-                <td><a href="#" class="action-link">View</a></td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="table-wrapper">
+            <div *ngIf="recentLoading" class="table-loading">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <div *ngIf="recentError" class="alert alert-warning mb-0" role="alert">
+              {{ recentError }}
+            </div>
+            <table class="applications-table" *ngIf="!recentLoading && !recentError">
+              <thead>
+                <tr>
+                  <th>Job Title</th>
+                  <th>Candidate</th>
+                  <th>Applied Date</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let application of recentApplications" tabindex="0" (dblclick)="viewApplication(application.id)">
+                  <td class="job-title-cell">
+                    {{ getJobTitle(application) }}
+                    <div class="text-muted" *ngIf="application.job?.department">
+                      {{ application.job?.department }} · {{ application.job?.location || '—' }}
+                    </div>
+                  </td>
+                  <td class="candidate-name">
+                    {{ getCandidateName(application) }}
+                    <div class="text-muted" *ngIf="getCandidateEmail(application)">
+                      {{ getCandidateEmail(application) }}
+                    </div>
+                  </td>
+                  <td class="date-cell">{{ getAppliedDate(application) }}</td>
+                  <td>
+                    <span [ngClass]="getStatusBadgeClass(application.status)">
+                      {{ getStatusLabel(application.status) }}
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="action-link" (click)="viewApplication(application.id)">
+                      View
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="!recentApplications.length">
+                  <td colspan="5" class="text-center text-muted py-4">
+                    No applications available yet.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

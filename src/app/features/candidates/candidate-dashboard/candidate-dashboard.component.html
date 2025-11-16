@@ -83,11 +83,9 @@
               (change)="selectApplication(null)"
               class="status-filter"
             >
-              <option value="">All Statuses</option>
-              <option value="New">Under Review</option>
-              <option value="Shortlisted">Interview Scheduled</option>
-              <option value="Hired">Offer</option>
-              <option value="Rejected">Rejected</option>
+              <option *ngFor="let option of statusFilterOptions" [ngValue]="option.value">
+                {{ option.label }}
+              </option>
             </select>
           </div>
         </div>
@@ -171,41 +169,41 @@
             </div>
 
             <!-- Resume Viewed -->
-            <div class="timeline-item" [class.completed]="selectedApplication.status !== 'New'">
+            <div class="timeline-item" [class.completed]="selectedApplication.status !== ApplicationStatus.New">
               <div class="timeline-dot">
                 <i class="bi bi-check2-circle"></i>
               </div>
               <div class="timeline-content">
                 <div class="timeline-status">Resume Viewed</div>
-                <div class="timeline-date" *ngIf="selectedApplication.status !== 'New'">
+                <div class="timeline-date" *ngIf="selectedApplication.status !== ApplicationStatus.New">
                   {{ getStatusChangeDate() }}
                 </div>
               </div>
             </div>
 
             <!-- Under Review -->
-            <div class="timeline-item" [class.completed]="selectedApplication.status === 'Shortlisted' || selectedApplication.status === 'Hired'">
+            <div class="timeline-item" [class.completed]="selectedApplication.status === ApplicationStatus.Shortlisted || selectedApplication.status === ApplicationStatus.Hired">
               <div class="timeline-dot">
-                <i [ngClass]="selectedApplication.status === 'Shortlisted' || selectedApplication.status === 'Hired' 
+                <i [ngClass]="selectedApplication.status === ApplicationStatus.Shortlisted || selectedApplication.status === ApplicationStatus.Hired 
                   ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
               </div>
               <div class="timeline-content">
                 <div class="timeline-status">Under Review</div>
-                <div class="timeline-date" *ngIf="selectedApplication.status === 'Shortlisted' || selectedApplication.status === 'Hired'">
+                <div class="timeline-date" *ngIf="selectedApplication.status === ApplicationStatus.Shortlisted || selectedApplication.status === ApplicationStatus.Hired">
                   {{ getStatusChangeDate() }}
                 </div>
               </div>
             </div>
 
             <!-- Interview Pending -->
-            <div class="timeline-item" [class.completed]="selectedApplication.status === 'Hired'">
+            <div class="timeline-item" [class.completed]="selectedApplication.status === ApplicationStatus.Hired">
               <div class="timeline-dot">
-                <i [ngClass]="selectedApplication.status === 'Hired' 
+                <i [ngClass]="selectedApplication.status === ApplicationStatus.Hired 
                   ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
               </div>
               <div class="timeline-content">
                 <div class="timeline-status">Interview Pending</div>
-                <div class="timeline-date" *ngIf="selectedApplication.status === 'Hired'">
+                <div class="timeline-date" *ngIf="selectedApplication.status === ApplicationStatus.Hired">
                   {{ getStatusChangeDate() }}
                 </div>
               </div>
@@ -224,7 +222,7 @@
             <div class="history-list">
               <div *ngFor="let history of selectedApplication.statusHistory" class="history-item">
                 <div class="history-date">{{ formatDate(history.changedDate) }}</div>
-                <div class="history-status">{{ history.status }}</div>
+                <div class="history-status">{{ getStatusLabel(history.status) }}</div>
                 <div *ngIf="history.notes" class="history-notes">{{ history.notes }}</div>
               </div>
             </div>

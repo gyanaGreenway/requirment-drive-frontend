@@ -58,14 +58,28 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let candidate of candidates">
+            <tr *ngFor="let candidate of candidates" (dblclick)="onRowDoubleClick(candidate)" tabindex="0">
               <td>
                 <strong>{{ candidate.firstName }} {{ candidate.lastName }}</strong>
               </td>
               <td>{{ candidate.email }}</td>
               <td>{{ candidate.phone || 'N/A' }}</td>
               <td>
-                <span class="badge bg-info">{{ candidate.skills || 'N/A' }}</span>
+                <span
+                  class="skill-badge-wrapper"
+                  (mouseenter)="onSkillMouseEnter(candidate)"
+                  (mouseleave)="onSkillMouseLeave()"
+                >
+                  <span class="badge bg-info skill-badge">
+                    {{ formatSkills(candidate) }}
+                  </span>
+                  <span
+                    *ngIf="hoveredCandidateId === candidate.id && hoveredTooltip"
+                    class="skill-tooltip"
+                  >
+                    {{ hoveredTooltip }}
+                  </span>
+                </span>
               </td>
               <td>
                 <div class="btn-group btn-group-sm">

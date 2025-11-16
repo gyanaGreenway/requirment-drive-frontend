@@ -1,8 +1,8 @@
 export enum ApplicationStatus {
-  New = 'New',
-  Shortlisted = 'Shortlisted',
-  Rejected = 'Rejected',
-  Hired = 'Hired'
+  New = 1,
+  Shortlisted = 2,
+  Rejected = 3,
+  Hired = 4
 }
 
 export interface JobApplication {

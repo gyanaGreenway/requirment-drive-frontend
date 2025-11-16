@@ -60,7 +60,7 @@ export interface Candidate {
   phone?: string;
   resumeUrl?: string;
   resumeHeadline?: string;
-  keySkills?: string[]; // e.g., ['Java', 'Spring Boot', 'Angular']
+  keySkills?: string[] | string; // e.g., ['Java', 'Spring Boot', 'Angular'] or comma-separated string
   employment?: Employment[];
   education?: Education[];
   itSkills?: ITSkill[];

@@ -67,29 +67,57 @@
         </div>
       </div>
 
+      <!-- Status Journey -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Application Journey</h5>
+        </div>
+        <div class="card-body">
+          <div class="status-flow">
+            <ng-container *ngFor="let status of statusJourney; let i = index">
+              <div class="status-step" [class.status-step-active]="isStatusActive(status)" [class.status-step-complete]="isStatusCompleted(status)" [class.status-step-terminal]="status === statusEnum.Rejected">
+                <div class="status-circle">
+                  <i *ngIf="isStatusCompleted(status)" class="bi bi-check-lg"></i>
+                  <span *ngIf="!isStatusCompleted(status)">{{ i + 1 }}</span>
+                </div>
+                <div class="status-name">{{ getStatusLabel(status) }}</div>
+                <div class="status-date" *ngIf="getStatusDate(status)">
+                  {{ getStatusDate(status) | date:'mediumDate' }}
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
       <!-- Status History -->
       <div class="card">
         <div class="card-header">
           <h5 class="mb-0">Status History</h5>
         </div>
         <div class="card-body">
-          <div *ngIf="application.statusHistory && application.statusHistory.length > 0" class="timeline">
-            <div *ngFor="let history of application.statusHistory; let i = index" class="timeline-item">
+          <div *ngIf="historyLoading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading history...</span>
+            </div>
+          </div>
+          <div *ngIf="!historyLoading && history.length > 0" class="timeline">
+            <div *ngFor="let historyItem of history; let i = index" class="timeline-item">
               <div class="d-flex">
                 <div class="timeline-marker me-3">
-                  <span [ngClass]="getStatusClass(history.status)">{{ history.status.charAt(0) }}</span>
+                  <span [ngClass]="getStatusClass(historyItem.status)">{{ getStatusLabel(historyItem.status).charAt(0) }}</span>
                 </div>
                 <div class="flex-grow-1">
                   <div class="d-flex justify-content-between">
-                    <strong>{{ history.status }}</strong>
-                    <small class="text-muted">{{ history.changedDate | date:'short' }}</small>
+                    <strong>{{ getStatusLabel(historyItem.status) }}</strong>
+                    <small class="text-muted">{{ historyItem.changedDate | date:'short' }}</small>
                   </div>
-                  <p *ngIf="history.notes" class="text-muted mb-0 mt-1">{{ history.notes }}</p>
+                  <p *ngIf="historyItem.notes" class="text-muted mb-0 mt-1">{{ historyItem.notes }}</p>
                 </div>
               </div>
             </div>
           </div>
-          <div *ngIf="!application.statusHistory || application.statusHistory.length === 0" class="text-muted">
+          <div *ngIf="!historyLoading && history.length === 0" class="text-muted">
             No status history available.
           </div>
         </div>
@@ -107,7 +135,7 @@
             <label class="form-label">Current Status</label>
             <div>
               <span [ngClass]="getStatusClass(application.status)" style="font-size: 1rem;">
-                {{ application.status }}
+                {{ getStatusLabel(application.status) }}
               </span>
             </div>
           </div>
@@ -117,11 +145,12 @@
             <select 
               class="form-select" 
               id="newStatus"
+              name="newStatus"
               [(ngModel)]="newStatus"
             >
-              <option [value]="undefined">Select status...</option>
-              <option *ngFor="let status of getAvailableStatuses()" [value]="status">
-                {{ status }}
+              <option [ngValue]="undefined">Select status...</option>
+              <option *ngFor="let status of getAvailableStatuses()" [ngValue]="status">
+                {{ getStatusLabel(status) }}
               </option>
             </select>
           </div>
@@ -136,6 +165,7 @@
             <textarea 
               class="form-control" 
               id="statusNotes"
+              name="statusNotes"
               rows="4"
               [(ngModel)]="statusNotes"
               placeholder="Add any notes about this status change..."

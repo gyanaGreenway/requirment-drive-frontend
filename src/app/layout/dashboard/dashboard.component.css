@@ -809,12 +809,30 @@
 }
 
 /* View Link */
+.table-wrapper {
+  position: relative;
+  min-height: 120px;
+}
+
+.table-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+}
+
 .action-link {
+  background: none;
+  border: none;
   color: #007bff;
   font-weight: 600;
   text-decoration: none;
+  cursor: pointer;
+  padding: 0;
 }
 
-.action-link:hover {
+.action-link:hover,
+.action-link:focus {
   text-decoration: underline;
+  outline: none;
 }

@@ -20,8 +20,8 @@
         <div class="col-md-3">
           <label class="form-label">Status</label>
           <select class="form-select" [(ngModel)]="filter.status" (change)="onFilterChange()">
-            <option [value]="undefined">All Statuses</option>
-            <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+            <option [ngValue]="undefined">All Statuses</option>
+            <option *ngFor="let status of statusOptions" [ngValue]="status.value">{{ status.label }}</option>
           </select>
         </div>
         <div class="col-md-3">
@@ -132,7 +132,7 @@
               </td>
               <td>
                 <span [ngClass]="getStatusClass(application.status)">
-                  {{ application.status }}
+                  {{ getStatusLabel(application.status) }}
                 </span>
               </td>
               <td>{{ application.appliedDate | date:'short' }}</td>

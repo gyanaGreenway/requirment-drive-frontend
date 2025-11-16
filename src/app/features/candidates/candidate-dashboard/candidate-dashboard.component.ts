@@ -7,6 +7,7 @@ import { JobService } from '../../../core/services/job.service';
 import { CandidateService } from '../../../core/services/candidate.service';
 import { AuthService } from '../../../core/services/auth';
 import { JobApplication, ApplicationStatus } from '../../../shared/models/application.model';
+import { APPLICATION_STATUS_LABELS } from '../../../shared/models/application-status-labels';
 import { Job } from '../../../shared/models/job.model';
 import { Candidate } from '../../../shared/models/candidate.model';
 import { PagedResult } from '../../../shared/models/paged-result.model';
@@ -36,10 +37,23 @@ export class CandidateDashboardComponent implements OnInit {
 
   loading = false;
   error: string | null = null;
-  selectedStatus: string = '';
+  selectedStatus?: ApplicationStatus;
   
   ApplicationStatus = ApplicationStatus;
-  statusOptions = ['All', ...Object.values(ApplicationStatus)];
+  statusFilterOptions = [
+    { value: undefined, label: 'All Statuses' },
+    { value: ApplicationStatus.New, label: 'Under Review' },
+    { value: ApplicationStatus.Shortlisted, label: 'Interview Scheduled' },
+    { value: ApplicationStatus.Hired, label: 'Offer' },
+    { value: ApplicationStatus.Rejected, label: 'Rejected' }
+  ];
+  private readonly statusOrdering: ApplicationStatus[] = [
+    ApplicationStatus.New,
+    ApplicationStatus.Shortlisted,
+    ApplicationStatus.Rejected,
+    ApplicationStatus.Hired
+  ];
+  private readonly statusLookup = this.buildStatusLookup();
 
   constructor(
     private applicationService: ApplicationService,
@@ -167,8 +181,9 @@ export class CandidateDashboardComponent implements OnInit {
     }
   }
 
-  getStatusKey(status: string): string {
-    switch (status) {
+  getStatusKey(status: ApplicationStatus | number | string | undefined): string {
+    const normalized = this.normalizeStatus(status) ?? ApplicationStatus.New;
+    switch (normalized) {
       case ApplicationStatus.New:
         return 'new';
       case ApplicationStatus.Shortlisted:
@@ -182,8 +197,9 @@ export class CandidateDashboardComponent implements OnInit {
     }
   }
 
-  getStatusLabel(status: string): string {
-    switch (status) {
+  getStatusLabel(status: ApplicationStatus | number | string | undefined): string {
+    const normalized = this.normalizeStatus(status);
+    switch (normalized) {
       case ApplicationStatus.New:
         return 'Under Review';
       case ApplicationStatus.Shortlisted:
@@ -193,12 +209,13 @@ export class CandidateDashboardComponent implements OnInit {
       case ApplicationStatus.Rejected:
         return 'Rejected';
       default:
-        return status;
+        return normalized ? APPLICATION_STATUS_LABELS[normalized] : 'Unknown';
     }
   }
 
-  getStatusIcon(status: ApplicationStatus): string {
-    switch (status) {
+  getStatusIcon(status: ApplicationStatus | number | string | undefined): string {
+    const normalized = this.normalizeStatus(status);
+    switch (normalized) {
       case ApplicationStatus.New:
         return '📥';
       case ApplicationStatus.Shortlisted:
@@ -330,6 +347,45 @@ export class CandidateDashboardComponent implements OnInit {
 
   goToJobs(): void {
     this.router.navigate(['/dashboard/jobs']);
+  }
+
+  private normalizeStatus(status: ApplicationStatus | number | string | undefined): ApplicationStatus | undefined {
+    if (status === undefined || status === null) return undefined;
+    if (typeof status === 'number') {
+      return this.normalizeNumericStatus(status);
+    }
+    const text = String(status).trim();
+    if (!text) return undefined;
+    const numeric = Number(text);
+    if (!Number.isNaN(numeric)) {
+      const numericStatus = this.normalizeNumericStatus(numeric);
+      if (numericStatus !== undefined) return numericStatus;
+    }
+    return this.statusLookup.get(text.toLowerCase());
+  }
+
+  private normalizeNumericStatus(value: number): ApplicationStatus | undefined {
+    const rounded = Math.trunc(value);
+    if (this.statusOrdering.includes(rounded as ApplicationStatus)) {
+      return rounded as ApplicationStatus;
+    }
+    if (rounded >= 0 && rounded < this.statusOrdering.length) {
+      return this.statusOrdering[rounded];
+    }
+    const plusOne = rounded + 1;
+    if (this.statusOrdering.includes(plusOne as ApplicationStatus)) {
+      return plusOne as ApplicationStatus;
+    }
+    return undefined;
+  }
+
+  private buildStatusLookup(): Map<string, ApplicationStatus> {
+    const lookup = new Map<string, ApplicationStatus>();
+    this.statusOrdering.forEach(status => {
+      lookup.set(status.toString().toLowerCase(), status);
+      lookup.set(APPLICATION_STATUS_LABELS[status].toLowerCase(), status);
+    });
+    return lookup;
   }
 }
 

@@ -1,22 +1,24 @@
 import { Component, OnInit, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgClass, NgForOf, NgIf } from '@angular/common';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
 import { JobService } from '../../core/services/job.service';
 import { CandidateService } from '../../core/services/candidate.service';
 import { ApplicationService } from '../../core/services/application.service';
-import { ApplicationStatus } from '../../shared/models/application.model';
+import { ApplicationStatus, JobApplication } from '../../shared/models/application.model';
+import { APPLICATION_STATUS_LABELS } from '../../shared/models/application-status-labels';
 import { AuthService } from '../../core/services/auth';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, RouterOutlet],
+  imports: [CommonModule, RouterModule, RouterOutlet, NgIf, NgForOf, NgClass],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
   router: Router;
   showDropdown = false;
+  recentApplications: JobApplication[] = [];
   stats = {
     totalJobs: 0,
     activeJobs: 0,
@@ -28,6 +30,8 @@ export class DashboardComponent implements OnInit {
     rejectedApplications: 0
   };
   loading = false;
+  recentLoading = false;
+  recentError: string | null = null;
 
   constructor(
     private jobService: JobService,
@@ -49,6 +53,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadStats();
+    this.loadRecentApplications();
   }
 
   isDashboardRoot(): boolean {
@@ -96,7 +101,14 @@ export class DashboardComponent implements OnInit {
     });
 
     // Load applications by status
-    Object.values(ApplicationStatus).forEach(status => {
+    const statuses: ApplicationStatus[] = [
+      ApplicationStatus.New,
+      ApplicationStatus.Shortlisted,
+      ApplicationStatus.Hired,
+      ApplicationStatus.Rejected
+    ];
+
+    statuses.forEach(status => {
       this.applicationService.getApplications({ 
         pageNumber: 1, 
         pageSize: 1, 
@@ -118,13 +130,35 @@ export class DashboardComponent implements OnInit {
               break;
           }
         },
-        error: (err) => console.error(`Failed to load ${status} applications`, err)
+        error: (err) => console.error(`Failed to load ${APPLICATION_STATUS_LABELS[status]} applications`, err)
       });
     });
   }
 
   toggleDropdown(): void {
     this.showDropdown = !this.showDropdown;
+  }
+
+  loadRecentApplications(): void {
+    this.recentLoading = true;
+    this.recentError = null;
+    this.applicationService.getApplications({
+      pageNumber: 1,
+      pageSize: 5,
+      sortBy: 'appliedDate',
+      sortOrder: 'desc'
+    }).subscribe({
+      next: (result) => {
+        this.recentApplications = result.items || [];
+        this.recentLoading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load recent applications', err);
+        this.recentApplications = [];
+        this.recentLoading = false;
+        this.recentError = 'Unable to load recent applications.';
+      }
+    });
   }
 
   getUserInitials(): string {
@@ -169,5 +203,52 @@ export class DashboardComponent implements OnInit {
     this.showDropdown = false;
     this.authService.logout();
     this.router.navigate(['/hr-login']);
+  }
+
+  viewApplication(applicationId: number): void {
+    if (!applicationId) return;
+    this.router.navigate(['/dashboard/applications', applicationId, 'status']);
+  }
+
+  getJobTitle(application: JobApplication): string {
+    if (application.job?.title) return application.job.title;
+    return `Job #${application.jobId}`;
+  }
+
+  getCandidateName(application: JobApplication): string {
+    if (application.candidate) {
+      const { firstName = '', lastName = '' } = application.candidate;
+      const name = `${firstName} ${lastName}`.trim();
+      if (name) return name;
+    }
+    return `Candidate #${application.candidateId}`;
+  }
+
+  getCandidateEmail(application: JobApplication): string {
+    return application.candidate?.email || '';
+  }
+
+  getAppliedDate(application: JobApplication): string {
+    return application.appliedDate ? new Date(application.appliedDate).toLocaleString() : '-';
+  }
+
+  getStatusLabel(status: ApplicationStatus | undefined): string {
+    if (!status) return 'Unknown';
+    return APPLICATION_STATUS_LABELS[status] ?? 'Unknown';
+  }
+
+  getStatusBadgeClass(status: ApplicationStatus | undefined): string {
+    switch (status) {
+      case ApplicationStatus.New:
+        return 'status-badge status-new';
+      case ApplicationStatus.Shortlisted:
+        return 'status-badge status-shortlisted';
+      case ApplicationStatus.Hired:
+        return 'status-badge status-hired';
+      case ApplicationStatus.Rejected:
+        return 'status-badge status-rejected';
+      default:
+        return 'status-badge';
+    }
   }
 }

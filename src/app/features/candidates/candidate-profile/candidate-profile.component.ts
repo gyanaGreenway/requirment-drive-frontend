@@ -113,7 +113,12 @@ export class CandidateProfileComponent implements OnInit {
     this.education = candidate.education || [];
     this.itSkills = candidate.itSkills || [];
     this.projects = candidate.projects || [];
-    this.keySkills = candidate.keySkills || [];
+    // Normalize keySkills to always be an array
+    this.keySkills = Array.isArray(candidate.keySkills) 
+      ? candidate.keySkills 
+      : (typeof candidate.keySkills === 'string' 
+        ? candidate.keySkills.split(/[,|]/).map((s: string) => s.trim()).filter(Boolean)
+        : []);
     this.personalDetails = candidate.personalDetails || this.personalDetails;
   }
 

@@ -34,3 +34,85 @@
   font-weight: bold;
 }
 
+.status-flow {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.status-step {
+  flex: 1;
+  min-width: 160px;
+  text-align: center;
+  position: relative;
+  padding: 0.5rem 0 0;
+}
+
+.status-step::after {
+  content: '';
+  position: absolute;
+  top: 1.5rem;
+  right: -0.75rem;
+  width: 1.5rem;
+  height: 2px;
+  background: #ced4da;
+}
+
+.status-step:last-child::after,
+.status-step.status-step-terminal::after {
+  display: none;
+}
+
+.status-step-complete::after {
+  background: #198754;
+}
+
+.status-circle {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 2px solid #0d6efd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.5rem;
+  font-weight: 600;
+  color: #0d6efd;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.status-step-complete .status-circle {
+  background: #198754;
+  border-color: #198754;
+  color: #fff;
+  box-shadow: 0 0.35rem 1rem rgba(25, 135, 84, 0.2);
+}
+
+.status-step-active .status-circle {
+  border-color: #0d6efd;
+  background: rgba(13, 110, 253, 0.1);
+}
+
+.status-name {
+  font-weight: 600;
+  color: #1f2933;
+}
+
+.status-step-complete .status-name {
+  color: #198754;
+}
+
+.status-step-active .status-name {
+  color: #0d6efd;
+}
+
+.status-date {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+}
+
