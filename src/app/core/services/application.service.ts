@@ -44,6 +44,11 @@ export class ApplicationService {
     return this.api.post<JobApplication>('applications', application);
   }
 
+  createPublicApplication(application: any): Observable<JobApplication> {
+    // Use the full public endpoint path
+    return this.api.post<JobApplication>('Applications/public', application);
+  }
+
   updateApplicationStatus(update: UpdateApplicationStatusDto | any): Observable<JobApplication> {
     const dto = this.buildStatusUpdateDto(update, { statusAsNumber: true });
     const resourceId = this.resolveApplicationId(update);

@@ -41,9 +41,13 @@ export class JobApplicationComponent implements OnInit {
     private authService: AuthService
   ) {
     this.applicationForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+      firstName: ['', [Validators.required, Validators.maxLength(100)]],
+      lastName: ['', [Validators.required, Validators.maxLength(100)]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(200)]],
+      phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10,20}$/)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(100)]],
+      keySkills: ['', [Validators.required]],
+      resumeUrl: [''],
       agreeTerms: [false, [Validators.requiredTrue]]
     });
   }
@@ -72,9 +76,13 @@ export class JobApplicationComponent implements OnInit {
 
   private getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
-      name: 'Name',
+      firstName: 'First Name',
+      lastName: 'Last Name',
       email: 'Email',
       phone: 'Phone',
+      password: 'Password',
+      keySkills: 'Key Skills',
+      resumeUrl: 'Resume URL',
       agreeTerms: 'Privacy Policy'
     };
     return labels[fieldName] || fieldName;
@@ -109,7 +117,9 @@ export class JobApplicationComponent implements OnInit {
   getRequirements(): string[] {
     if (!this.job?.requirements) return [];
     return typeof this.job.requirements === 'string'
-      ? this.job.requirements.split(/[\n,;]+/).map(r => r.trim()).filter(Boolean)
+      ? (Array.isArray(this.job.requirements as string[] | string) 
+          ? (this.job.requirements as string[]).map((r: string) => r.trim()).filter(Boolean)
+          : (this.job.requirements as string).split(/[\n,;]+/).map((r: string) => r.trim()).filter(Boolean))
       : [];
   }
 
@@ -149,46 +159,40 @@ export class JobApplicationComponent implements OnInit {
       return;
     }
 
-    // Check if user is authenticated
-    const candidateId = this.authService.getCandidateId();
-    
-    if (!candidateId) {
-      // Redirect to login
-      this.router.navigate(['/candidate-login'], { 
-        queryParams: { returnUrl: this.router.url }
-      });
-      return;
-    }
-
     if (!this.job) return;
 
     this.submitting = true;
     this.submitError = null;
 
-    const dto: CreateApplicationDto = {
+    const formValue = this.applicationForm.value;
+
+    // Create candidate payload - backend will create candidate and application together
+    const dto: any = {
       jobId: this.job.id,
-      candidateId: candidateId
+      firstName: formValue.firstName,
+      lastName: formValue.lastName,
+      email: formValue.email,
+      phone: formValue.phone,
+      password: formValue.password,
+      keySkills: formValue.keySkills,
+      resumeUrl: formValue.resumeUrl || null,
+      notes: null
     };
 
-    this.applicationService.createApplication(dto).subscribe({
+    this.applicationService.createPublicApplication(dto).subscribe({
       next: () => {
         this.submitSuccess = true;
         this.submitting = false;
         setTimeout(() => {
-          this.router.navigate(['/candidate-dashboard']);
-        }, 2000);
+          this.router.navigate(['/public-jobs']);
+        }, 3000);
       },
       error: (err) => {
         this.submitting = false;
         if (err.status === 409) {
           this.submitError = 'You have already applied for this job.';
-        } else if (err.status === 401) {
-          this.submitError = 'Please login to apply.';
-          setTimeout(() => {
-            this.router.navigate(['/candidate-login'], { 
-              queryParams: { returnUrl: this.router.url }
-            });
-          }, 1500);
+        } else if (err.error?.message) {
+          this.submitError = err.error.message;
         } else {
           this.submitError = 'Failed to submit application. Please try again.';
         }

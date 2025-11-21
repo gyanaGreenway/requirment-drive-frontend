@@ -40,12 +40,18 @@ export class CandidateService {
       return throwError(() => new Error('Candidate id is required for update.'));
     }
 
-    const payload = { updateCandidateDto: dto, UpdateCandidateDto: dto };
+    console.log('Sending update request - DTO (unwrapped):', dto);
 
+    // Send DTO directly without wrapper - backend expects it at root level
     return this.api.put<Candidate>(`Candidates/${resourceId}`, dto).pipe(
       catchError((err: any) => {
-        if (this.shouldRetryWithWrapper(err, 'updatecandidatedto')) {
-          return this.api.put<Candidate>(`Candidates/${resourceId}`, payload);
+        console.error('Update failed:', err);
+        
+        // If direct send fails with binding error, try with wrapper
+        if (err.status === 400 && this.shouldRetryWithWrapper(err, 'updatecandidatedto')) {
+          const wrappedPayload = { updateCandidateDto: dto };
+          console.log('Retrying with wrapped payload:', wrappedPayload);
+          return this.api.put<Candidate>(`Candidates/${resourceId}`, wrappedPayload);
         }
         return throwError(() => err);
       })
@@ -104,7 +110,8 @@ export class CandidateService {
 
     const keySkills = this.normalizeKeySkills(get('keySkills', 'KeySkills'));
     if (keySkills !== undefined) {
-      dto.KeySkills = Array.isArray(keySkills) ? keySkills.join(', ') : keySkills;
+      // Keep as array for backend - do NOT convert to comma-separated string
+      dto.KeySkills = Array.isArray(keySkills) ? keySkills : [keySkills];
     }
 
     const profileSummary = get('profileSummary', 'ProfileSummary');
@@ -118,6 +125,19 @@ export class CandidateService {
 
     const personalDetails = get('personalDetails', 'PersonalDetails');
     if (personalDetails !== undefined) dto.PersonalDetails = personalDetails;
+
+    // Add complex arrays
+    const employment = get('employment', 'Employment');
+    if (employment !== undefined) dto.Employment = employment;
+
+    const education = get('education', 'Education');
+    if (education !== undefined) dto.Education = education;
+
+    const itSkills = get('itSkills', 'ItSkills') || get('itSkills', 'ITSkills');
+    if (itSkills !== undefined) dto.ItSkills = itSkills;
+
+    const projects = get('projects', 'Projects');
+    if (projects !== undefined) dto.Projects = projects;
 
     if (options.includePassword) {
       const password = get('password', 'Password');

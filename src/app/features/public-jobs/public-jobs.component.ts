@@ -111,7 +111,9 @@ export class PublicJobsComponent implements OnInit {
       return 'No specific requirements listed';
     }
     const reqArray = typeof job.requirements === 'string' 
-      ? job.requirements.split(',').map(r => r.trim()).filter(Boolean)
+      ? (Array.isArray(job.requirements as string[] | string)
+          ? (job.requirements as string[]).map((r: string) => r.trim()).filter(Boolean)
+          : (job.requirements as string).split(',').map((r: string) => r.trim()).filter(Boolean))
       : [];
     
     if (reqArray.length === 0) {
@@ -128,22 +130,28 @@ export class PublicJobsComponent implements OnInit {
 
   getRequirementsList(job: Job): string[] {
     if (!job.requirements) return [];
-    const reqs = typeof job.requirements === 'string'
-      ? job.requirements.split(/[\n,;]+/).map(r => r.trim()).filter(Boolean)
-      : [];
+    const requirements = job.requirements as string[] | string;
+    const reqs = Array.isArray(requirements)
+      ? requirements.map((r: string) => r.trim()).filter(Boolean)
+      : typeof requirements === 'string'
+        ? requirements.split(/[\n,;]+/).map((r: string) => r.trim()).filter(Boolean)
+        : [];
     return reqs.slice(0, 3); // Show first 3 requirements
   }
 
   getMustHaveSkills(job: Job): string[] {
     if (!job.requirements) return [];
-    const skills = typeof job.requirements === 'string'
-      ? job.requirements.split(/[\n,;]+/).map(r => r.trim()).filter(Boolean)
-      : [];
+    const requirements = job.requirements as string[] | string;
+    const skills = Array.isArray(requirements)
+      ? requirements.map((r: string) => r.trim()).filter(Boolean)
+      : typeof requirements === 'string'
+        ? requirements.split(/[\n,;]+/).map((r: string) => r.trim()).filter(Boolean)
+        : [];
     // Extract key technology names from requirements
     const techKeywords = ['ASP.NET', 'Angular', 'SQL', 'Azure', 'C#', 'Web API', 'MVC', '.NET', 'DevOps', 'CI/CD', 'Docker', 'Kubernetes'];
     const foundSkills: string[] = [];
-    skills.forEach(skill => {
-      techKeywords.forEach(tech => {
+    skills.forEach((skill: string) => {
+      techKeywords.forEach((tech: string) => {
         if (skill.toLowerCase().includes(tech.toLowerCase()) && !foundSkills.includes(tech)) {
           foundSkills.push(tech);
         }

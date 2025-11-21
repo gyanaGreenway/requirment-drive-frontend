@@ -1,34 +1,40 @@
 <div class="dashboard-container">
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+    <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle Sidebar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="3" width="7" height="18" rx="2" stroke="currentColor" stroke-width="2" [attr.fill]="sidebarCollapsed ? 'none' : 'currentColor'" [attr.fill-opacity]="sidebarCollapsed ? '0' : '0.3'"/>
+        <rect x="13" y="3" width="8" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+      </svg>
+    </button>
     <div class="logo-section">
       <div class="logo-icon">📊</div>
-      <h2 class="logo">RecruitmentDrive</h2>
+      <h2 class="logo" *ngIf="!sidebarCollapsed">RecruitmentDrive</h2>
     </div>
     <nav>
       <ul>
         <li>
-          <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+          <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" [attr.title]="sidebarCollapsed ? 'Dashboard' : null">
             <span class="icon"><i class="bi bi-speedometer2"></i></span>
-            <span class="text">Dashboard</span>
+            <span class="text" *ngIf="!sidebarCollapsed">Dashboard</span>
           </a>
         </li>
         <li>
-          <a routerLink="/dashboard/jobs" routerLinkActive="active" class="nav-link">
+          <a routerLink="/dashboard/jobs" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Jobs' : null">
             <span class="icon"><i class="bi bi-briefcase"></i></span>
-            <span class="text">Jobs</span>
+            <span class="text" *ngIf="!sidebarCollapsed">Jobs</span>
           </a>
         </li>
         <li>
-          <a routerLink="/dashboard/candidates" routerLinkActive="active" class="nav-link">
+          <a routerLink="/dashboard/candidates" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Candidates' : null">
             <span class="icon"><i class="bi bi-people"></i></span>
-            <span class="text">Candidates</span>
+            <span class="text" *ngIf="!sidebarCollapsed">Candidates</span>
           </a>
         </li>
         <li>
-          <a routerLink="/dashboard/applications" routerLinkActive="active" class="nav-link">
+          <a routerLink="/dashboard/applications" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Applications' : null">
             <span class="icon"><i class="bi bi-file-earmark-text"></i></span>
-            <span class="text">Applications</span>
+            <span class="text" *ngIf="!sidebarCollapsed">Applications</span>
           </a>
         </li>
       </ul>

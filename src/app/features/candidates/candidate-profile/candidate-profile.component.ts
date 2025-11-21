@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CandidateService } from '../../../core/services/candidate.service';
+import { AuthService } from '../../../core/services/auth';
 import { 
   Candidate, 
   Employment, 
@@ -21,7 +22,7 @@ import {
   styleUrls: ['./candidate-profile.component.css']
 })
 export class CandidateProfileComponent implements OnInit {
-  candidateId: number = 1; // Should come from auth service
+  candidateId: number | null = null;
   candidate: Candidate | null = null;
   loading: boolean = false;
   saving: boolean = false;
@@ -77,24 +78,65 @@ export class CandidateProfileComponent implements OnInit {
 
   constructor(
     private candidateService: CandidateService,
+    private authService: AuthService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.loadCandidateProfile();
+    this.candidateId = this.authService.getCandidateId();
+    console.log('Initial candidateId from auth:', this.candidateId);
+    
+    // Debug: Check localStorage
+    const currentUser = this.authService.getCurrentUser();
+    console.log('Current user from auth:', currentUser);
+    
+    if (!this.candidateId) {
+      console.log('No candidateId found, trying to fetch from backend...');
+      this.loading = true;
+      this.authService.getCurrentUserProfile().subscribe({
+        next: (profile) => {
+          console.log('Profile from backend:', profile);
+          this.candidateId = profile.candidateId || profile.id;
+          console.log('Extracted candidateId:', this.candidateId);
+          if (this.candidateId) {
+            this.loadCandidateProfile();
+          } else {
+            this.error = 'Unable to load your profile. Please login again.';
+            this.loading = false;
+            setTimeout(() => this.router.navigate(['/candidate-login']), 2000);
+          }
+        },
+        error: (err) => {
+          this.error = 'Please login to view your profile.';
+          this.loading = false;
+          console.error('Error fetching profile:', err);
+          setTimeout(() => this.router.navigate(['/candidate-login']), 2000);
+        }
+      });
+    } else {
+      console.log('Using candidateId:', this.candidateId);
+      this.loadCandidateProfile();
+    }
   }
 
   loadCandidateProfile(): void {
+    if (!this.candidateId) {
+      this.error = 'Candidate ID not available';
+      return;
+    }
+    
+    console.log('Loading candidate profile for ID:', this.candidateId);
     this.loading = true;
     this.candidateService.getCandidate(this.candidateId).subscribe({
       next: (candidate) => {
+        console.log('Candidate profile loaded:', candidate);
         this.candidate = candidate;
         this.populateForm(candidate);
         this.loading = false;
       },
       error: (err) => {
-        this.error = 'Failed to load candidate profile';
-        console.error(err);
+        console.error('Failed to load candidate profile:', err);
+        this.error = `Failed to load candidate profile. ${err.status === 403 ? 'Access denied - you may not have permission to view this profile.' : ''}`;
         this.loading = false;
       }
     });
@@ -113,18 +155,43 @@ export class CandidateProfileComponent implements OnInit {
     this.education = candidate.education || [];
     this.itSkills = candidate.itSkills || [];
     this.projects = candidate.projects || [];
+    
     // Normalize keySkills to always be an array
     this.keySkills = Array.isArray(candidate.keySkills) 
       ? candidate.keySkills 
       : (typeof candidate.keySkills === 'string' 
         ? candidate.keySkills.split(/[,|]/).map((s: string) => s.trim()).filter(Boolean)
         : []);
-    this.personalDetails = candidate.personalDetails || this.personalDetails;
+    
+    // Merge personalDetails, keeping defaults for empty values
+    if (candidate.personalDetails) {
+      this.personalDetails = {
+        dateOfBirth: candidate.personalDetails.dateOfBirth || '',
+        gender: candidate.personalDetails.gender || 'Male',
+        nationality: candidate.personalDetails.nationality || '',
+        maritalStatus: candidate.personalDetails.maritalStatus || 'Single',
+        address: candidate.personalDetails.address || '',
+        city: candidate.personalDetails.city || '',
+        state: candidate.personalDetails.state || '',
+        zipCode: candidate.personalDetails.zipCode || '',
+        country: candidate.personalDetails.country || ''
+      };
+    }
   }
 
   saveProfile(): void {
+    if (!this.candidateId) {
+      this.error = 'Candidate ID not available. Please login again.';
+      return;
+    }
+    
     if (!this.validateForm()) {
       this.error = 'Please fill in all required fields';
+      return;
+    }
+
+    if (!this.candidate?.rowVersion) {
+      this.error = 'Unable to save - missing version information. Please reload the page.';
       return;
     }
 
@@ -147,11 +214,15 @@ export class CandidateProfileComponent implements OnInit {
       profileSummary: this.profileSummary,
       accomplishments: this.accomplishments,
       careerProfile: this.careerProfile,
-      personalDetails: this.personalDetails
+      personalDetails: this.personalDetails,
+      rowVersion: this.candidate.rowVersion
     };
+
+    console.log('Saving candidate profile with DTO:', updateDto);
 
     this.candidateService.updateCandidate(updateDto).subscribe({
       next: (response) => {
+        console.log('Save successful, response:', response);
         this.successMessage = 'Profile saved successfully!';
         this.candidate = response;
         this.saving = false;
@@ -161,8 +232,17 @@ export class CandidateProfileComponent implements OnInit {
         }, 3000);
       },
       error: (err) => {
-        this.error = 'Failed to save profile. Please try again.';
-        console.error(err);
+        console.error('Save failed:', err);
+        this.error = err.error?.title || 'Failed to save profile. Please try again.';
+        
+        // Show validation errors if present
+        if (err.error?.errors) {
+          const validationErrors = Object.entries(err.error.errors)
+            .map(([key, msgs]: [string, any]) => `${key}: ${msgs.join(', ')}`)
+            .join('\n');
+          this.error = `Validation errors:\n${validationErrors}`;
+        }
+        
         this.saving = false;
       }
     });

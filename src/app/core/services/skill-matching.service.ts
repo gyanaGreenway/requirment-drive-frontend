@@ -95,7 +95,12 @@ export class SkillMatchingService {
 
     // Extract from requirements field (assuming it contains comma-separated or similar format)
     if (job.requirements) {
-      const reqArray = job.requirements.split(',').map((r: string) => r.trim().toLowerCase());
+      const requirements = job.requirements as string[] | string;
+      const reqArray = Array.isArray(requirements) 
+        ? requirements.map((r: string) => r.trim().toLowerCase())
+        : typeof requirements === 'string' 
+          ? requirements.split(',').map((r: string) => r.trim().toLowerCase())
+          : [];
       reqArray.forEach((req: string) => skills.add(req));
     }
 

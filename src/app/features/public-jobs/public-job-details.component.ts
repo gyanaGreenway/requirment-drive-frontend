@@ -150,7 +150,9 @@ export class PublicJobDetailsComponent implements OnInit {
   getRequirements(): string[] {
     if (!this.job?.requirements) return [];
     return typeof this.job.requirements === 'string'
-      ? this.job.requirements.split(',').map(r => r.trim()).filter(Boolean)
+      ? (Array.isArray(this.job.requirements as string[] | string)
+          ? (this.job.requirements as string[]).map((r: string) => r.trim()).filter(Boolean)
+          : (this.job.requirements as string).split(',').map((r: string) => r.trim()).filter(Boolean))
       : [];
   }
 

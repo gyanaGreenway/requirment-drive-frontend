@@ -7,7 +7,7 @@ export interface Job {
   location: string;
   salary?: number;
   salaryRange?: string;
-  requirements?: string;
+  requirements?: string[];
   postedDate: Date;
   closingDate?: Date;
   isActive: boolean;
@@ -19,8 +19,9 @@ export interface CreateJobDto {
   description: string;
   department: string;
   location: string;
+  salary?: number;
   salaryRange?: string;
-  requirements?: string;
+  requirements?: string[];
   closingDate?: Date;
   isActive: boolean;
 }
@@ -31,8 +32,9 @@ export interface UpdateJobDto {
   description: string;
   department: string;
   location: string;
+  salary?: number;
   salaryRange?: string;
-  requirements?: string;
+  requirements?: string[];
   closingDate?: Date;
   isActive: boolean;
   rowVersion?: string;

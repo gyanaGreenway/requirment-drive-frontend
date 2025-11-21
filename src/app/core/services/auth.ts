@@ -8,6 +8,7 @@ export interface AuthResponse {
   user?: any;
   role?: string;
   userId?: number;
+  candidateId?: number;  // Add candidateId to response
   email?: string;
 }
 
@@ -91,15 +92,20 @@ export class AuthService {
     const [ep, ...rest] = endpoints;
     this.api.post<AuthResponse>(ep, payload).subscribe({
       next: (res) => {
+        console.log('Login response from backend:', res);
+        
         if (res && res.token) {
           localStorage.setItem('token', res.token);
           this.initializeSessionFromToken(res.token);
         }
         const normalizedUser = res.user ?? {
           id: res.userId,
+          candidateId: res.candidateId,
           email: res.email,
           role: res.role
         };
+        console.log('Normalized user object:', normalizedUser);
+        
         if (normalizedUser) {
           localStorage.setItem('currentUser', JSON.stringify(normalizedUser));
           this.currentUserSubject.next(normalizedUser);
@@ -140,13 +146,29 @@ export class AuthService {
 
   getCandidateId(): number | null {
     const user = this.getCurrentUser();
-    return user?.candidateId || user?.id || null;
+    console.log('getCandidateId - current user:', user);
+    
+    // First check for candidateId explicitly
+    if (user?.candidateId) {
+      console.log('Found candidateId in user object:', user.candidateId);
+      return user.candidateId;
+    }
+    // Fallback: if user.id exists and role is Candidate (role 2), return it
+    // But this is NOT ideal - backend should return candidateId
+    if (user?.id && user?.role === 2) {
+      console.warn('Using user.id as candidateId - backend should return candidateId separately');
+      return user.id;
+    }
+    console.warn('No candidateId found in user object');
+    return null;
   }
 
   // ===== JWT/session helpers =====
   private initializeSessionFromToken(token: string): void {
     try {
       const payload = this.decodeJwt(token);
+      console.log('Decoded JWT payload:', payload);
+      
       const expSec: number | undefined = payload?.exp;
       if (!expSec) {
         this.sessionExpiresAtSubject.next(null);
@@ -154,6 +176,21 @@ export class AuthService {
       }
       const expiresAt = new Date(expSec * 1000);
       this.sessionExpiresAtSubject.next(expiresAt);
+      
+      // Extract candidateId from JWT if available
+      const candidateId = payload?.candidateId || payload?.CandidateId || payload?.candidate_id;
+      console.log('CandidateId from JWT:', candidateId);
+      
+      if (candidateId) {
+        const currentUser = this.getCurrentUser();
+        if (currentUser) {
+          currentUser.candidateId = parseInt(candidateId);
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
+          this.currentUserSubject.next(currentUser);
+          console.log('Updated currentUser with candidateId:', currentUser);
+        }
+      }
+      
       // Start ticking each 15s to update warnings
       if (this.tickSub) this.tickSub.unsubscribe();
       this.tickSub = interval(15000).subscribe(() => this.updateSessionWarning());

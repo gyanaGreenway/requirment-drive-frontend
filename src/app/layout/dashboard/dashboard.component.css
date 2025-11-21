@@ -23,6 +23,59 @@
   padding: 25px 20px;
   box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
   overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  z-index: 100;
+  transition: width 0.3s ease, padding 0.3s ease;
+}
+
+.sidebar.collapsed {
+  width: 80px;
+  padding: 25px 10px;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 20px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  background: rgba(30, 35, 50, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  right: 50%;
+  transform: translateX(50%);
+}
+
+.sidebar-toggle:hover {
+  background: rgba(40, 45, 65, 0.8);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar.collapsed .sidebar-toggle:hover {
+  transform: translateX(50%) translateY(-2px);
+}
+
+.sidebar-toggle svg {
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover svg {
+  color: #ffffff;
+  transform: scale(1.05);
 }
 
 .logo-section {
@@ -30,8 +83,16 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 40px;
+  margin-top: 30px;
   padding-bottom: 25px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: flex-start;
+  transition: justify-content 0.3s ease, margin-top 0.3s ease;
+}
+
+.sidebar.collapsed .logo-section {
+  justify-content: center;
+  margin-top: 50px;
 }
 
 .logo-icon {
@@ -64,6 +125,11 @@
   border-radius: 10px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-left: 3px solid transparent;
+}
+
+.sidebar.collapsed .nav-link {
+  justify-content: center;
+  padding: 14px 8px;
 }
 
 .nav-link:hover {

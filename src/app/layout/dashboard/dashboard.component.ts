@@ -18,6 +18,7 @@ import { AuthService } from '../../core/services/auth';
 export class DashboardComponent implements OnInit {
   router: Router;
   showDropdown = false;
+  sidebarCollapsed = false;
   recentApplications: JobApplication[] = [];
   stats = {
     totalJobs: 0,
@@ -213,6 +214,10 @@ export class DashboardComponent implements OnInit {
     this.showDropdown = false;
     this.authService.logout();
     this.router.navigate(['/hr-login']);
+  }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
   }
 
   viewApplication(applicationId: number): void {

@@ -20,9 +20,12 @@ export class JobCreateComponent implements OnInit, OnDestroy {
     department: '',
     location: '',
     salaryRange: '',
-    requirements: '',
+    requirements: [],
     isActive: true
   };
+  // Form-specific string properties for textarea binding
+  requirementsText = '';
+  
   isEditMode = false;
   jobId?: number;
   loading = false;
@@ -70,18 +73,51 @@ export class JobCreateComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.jobService.getJob(this.jobId).subscribe({
       next: (job) => {
+        // Debug: Log the raw job data
+        console.log('Raw job data from API:', job);
+        console.log('Available fields:', Object.keys(job));
+        
+        // Convert requirements array to string for textarea binding
+        let requirementsString = '';
+        if (job.requirements !== undefined && job.requirements !== null) {
+          if (Array.isArray(job.requirements)) {
+            console.log('Requirements is array, joining...');
+            requirementsString = job.requirements.join('\n');
+          } else if (typeof job.requirements === 'string') {
+            console.log('Requirements is string');
+            requirementsString = job.requirements;
+          }
+        } else {
+          console.warn('Requirements field is missing from API response');
+        }
+
+        // Ensure salaryRange is a string
+        let salaryRangeString = '';
+        if (job.salaryRange) {
+          salaryRangeString = typeof job.salaryRange === 'string' ? job.salaryRange : String(job.salaryRange);
+        } else if ((job as any).salary) {
+          // Format salary as range if salaryRange not available
+          const salaryNum = (job as any).salary;
+          salaryRangeString = `$${salaryNum.toLocaleString()}`;
+        }
+
         this.job = {
           id: job.id,
           title: job.title,
           description: job.description,
           department: job.department,
           location: job.location,
-          salaryRange: job.salaryRange || '',
-          requirements: job.requirements || '',
+          salaryRange: salaryRangeString,
+          requirements: job.requirements || [],
           closingDate: job.closingDate,
           isActive: job.isActive,
           rowVersion: job.rowVersion
         };
+        
+        // Set the text version for textarea binding
+        this.requirementsText = requirementsString;
+        
+        console.log('Final job object for form:', this.job);
         this.loading = false;
       },
       error: (err) => {
@@ -205,7 +241,7 @@ export class JobCreateComponent implements OnInit, OnDestroy {
 
   private buildNormalizedJobPayload(): any {
     const source = this.job as CreateJobDto | UpdateJobDto;
-    const requirements = this.normalizeRequirements((source as any).requirements);
+    const requirements = this.normalizeRequirements(this.requirementsText);
     const closingDate = this.normalizeClosingDate(source.closingDate);
     const salaryNumber = this.extractSalaryNumber((source as any).salary, source.salaryRange);
 
