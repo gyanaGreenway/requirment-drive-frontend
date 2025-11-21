@@ -4,6 +4,7 @@ import { catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { Job, CreateJobDto, UpdateJobDto } from '../../shared/models/job.model';
 import { PagedResult } from '../../shared/models/paged-result.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -15,9 +16,76 @@ export class JobService {
     return this.api.get<PagedResult<Job>>('Jobs', { pageNumber, pageSize });
   }
 
-  // Public Jobs (non-authenticated listing for candidates)
+  // Attempt multiple endpoint variants to cope with backend naming differences.
+  // Order matters: first successful response short-circuits.
+  private tryEndpoints<T>(endpoints: string[], params: any): Observable<T> {
+    if (!endpoints.length) {
+      return throwError(() => new Error('No matching public jobs endpoint found. Tried variants without success.'));
+    }
+    const [current, ...rest] = endpoints;
+    return this.api.get<T>(current, params).pipe(
+      catchError(err => {
+        if (err.status === 404) {
+          console.warn('Public jobs 404 for', current, '– trying next variant');
+          return this.tryEndpoints<T>(rest, params);
+        }
+        return throwError(() => err) as Observable<T>;
+      })
+    );
+  }
+
   getPublicJobs(pageNumber: number = 1, pageSize: number = 10): Observable<PagedResult<Job>> {
-    return this.api.get<PagedResult<Job>>('public/jobs', { pageNumber, pageSize });
+    const segment = environment.publicJobsEndpoint || 'public/jobs';
+    const variants = [
+      segment,                  // e.g., public/PublicJobs
+      'public/PublicJobs',
+      'Public/PublicJobs',
+      'public/jobs',
+      'Public/Jobs',
+      'jobs/public',
+      'Jobs/Public',
+      'Jobs'
+    ];
+    // Append page params each attempt
+    return this.tryEndpoints<PagedResult<Job>>(variants, { pageNumber, pageSize }).pipe(
+      catchError((err: any) => {
+        // If all variants 404 (or custom error thrown), return an empty result so UI shows "no jobs" instead of error
+        const message = (err?.message || '').toLowerCase();
+        if (err?.status === 404 || message.includes('no matching public jobs endpoint')) {
+          const empty: PagedResult<Job> = { items: [], totalCount: 0, totalPages: 0 } as any;
+          return new Observable<PagedResult<Job>>((observer) => { observer.next(empty); observer.complete(); });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  getPublicJob(id: number): Observable<Job> {
+    const segment = environment.publicJobsEndpoint || 'public/jobs';
+    const baseVariants = [
+      segment,
+      'public/PublicJobs',
+      'Public/PublicJobs',
+      'public/jobs',
+      'Public/Jobs',
+      'jobs/public',
+      'Jobs/Public',
+      'Jobs'
+    ];
+    const variantsWithId = baseVariants.map(v => `${v}/${id}`);
+    return this.tryEndpoints<Job>(variantsWithId, {});
+  }
+
+  getPublicJobByPublicId(publicId: string): Observable<Job> {
+    const baseVariants = [
+      `public/PublicJobs/${publicId}`,
+      `Public/PublicJobs/${publicId}`,
+      `public/jobs/${publicId}`,
+      `Public/Jobs/${publicId}`,
+      `jobs/public/${publicId}`,
+      `Jobs/Public/${publicId}`
+    ];
+    return this.tryEndpoints<Job>(baseVariants, {});
   }
 
   getJob(id: number): Observable<Job> {

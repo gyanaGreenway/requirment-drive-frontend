@@ -108,8 +108,13 @@
                   <span [ngClass]="getStatusClass(historyItem.status)">{{ getStatusLabel(historyItem.status).charAt(0) }}</span>
                 </div>
                 <div class="flex-grow-1">
-                  <div class="d-flex justify-content-between">
-                    <strong>{{ getStatusLabel(historyItem.status) }}</strong>
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <strong>{{ getStatusLabel(historyItem.status) }}</strong>
+                      <small class="text-muted d-block" *ngIf="historyItem.changedBy">
+                        <i class="bi bi-person-fill me-1"></i>{{ historyItem.changedBy }}
+                      </small>
+                    </div>
                     <small class="text-muted">{{ historyItem.changedDate | date:'short' }}</small>
                   </div>
                   <p *ngIf="historyItem.notes" class="text-muted mb-0 mt-1">{{ historyItem.notes }}</p>

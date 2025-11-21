@@ -33,6 +33,10 @@ export class DashboardComponent implements OnInit {
   recentLoading = false;
   recentError: string | null = null;
 
+  // Session warning
+  sessionMinutesLeft: number | null = null;
+  showSessionBanner = false;
+
   constructor(
     private jobService: JobService,
     private candidateService: CandidateService,
@@ -54,6 +58,12 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.loadStats();
     this.loadRecentApplications();
+
+    // Subscribe to session warnings
+    this.authService.sessionWarningMinutesLeft$.subscribe(mins => {
+      this.sessionMinutesLeft = mins;
+      this.showSessionBanner = mins !== null && mins >= 0;
+    });
   }
 
   isDashboardRoot(): boolean {

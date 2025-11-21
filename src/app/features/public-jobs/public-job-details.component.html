@@ -1,0 +1,185 @@
+<div class="job-details-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="loading-text">Loading job details...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="alert alert-danger">
+      <i class="bi bi-exclamation-circle"></i>
+      {{ error }}
+    </div>
+    <button class="btn-back-error" (click)="backToJobs()">
+      <i class="bi bi-arrow-left"></i>
+      Back to Jobs
+    </button>
+  </div>
+
+  <!-- Job Details -->
+  <div *ngIf="!loading && job" class="job-details-content">
+    <!-- Header with Back Button -->
+    <div class="page-header">
+      <button class="btn-back" (click)="backToJobs()">
+        <i class="bi bi-arrow-left"></i>
+        Back to Jobs
+      </button>
+    </div>
+
+    <!-- Job Card -->
+    <div class="job-card">
+      <!-- Company and Title Section -->
+      <div class="job-header-section">
+        <div class="company-logo">
+          <img src="assets/company-logo.png" alt="EcoTech" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxMiIgZmlsbD0iIzBkNmVmZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjMyIiBmaWxsPSJ3aGl0ZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSJib2xkIj5FPC90ZXh0Pjwvc3ZnPg=='">
+        </div>
+        <div class="job-header-info">
+          <h1 class="job-title">{{ job.title }}</h1>
+          <p class="company-name">
+            <span>EcoTech</span>
+            <a href="#" class="company-link">
+              <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+          </p>
+        </div>
+      </div>
+
+      <!-- Meta Information Row -->
+      <div class="meta-info-row">
+        <div class="meta-badge">
+          <i class="bi bi-geo-alt-fill"></i>
+          <span>{{ job.location }}</span>
+        </div>
+        <div class="meta-badge">
+          <i class="bi bi-clock-fill"></i>
+          <span>Full Time</span>
+        </div>
+        <div class="meta-badge">
+          <i class="bi bi-briefcase-fill"></i>
+          <span>In Office</span>
+        </div>
+        <div class="meta-badge" *ngIf="job.closingDate">
+          <i class="bi bi-calendar-event"></i>
+          <span>3 - 6 years experience</span>
+        </div>
+      </div>
+
+      <!-- Success/Error Messages -->
+      <div *ngIf="applicationSuccess" class="alert alert-success">
+        <i class="bi bi-check-circle-fill"></i>
+        Application submitted successfully! Redirecting to your dashboard...
+      </div>
+
+      <div *ngIf="applicationError" class="alert alert-danger">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        {{ applicationError }}
+        <button type="button" class="btn-close" (click)="applicationError = null"></button>
+      </div>
+
+      <!-- Job Description -->
+      <div class="content-section">
+        <p class="job-description">{{ job.description }}</p>
+      </div>
+
+      <!-- Key Responsibilities -->
+      <div class="content-section" *ngIf="getKeyResponsibilities().length > 0">
+        <h2 class="section-header">
+          <i class="bi bi-card-checklist"></i>
+          Key Responsibilities
+        </h2>
+        <ul class="styled-list">
+          <li *ngFor="let responsibility of getKeyResponsibilities()">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>{{ responsibility }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Skills & Requirements -->
+      <div class="content-section">
+        <h2 class="section-header">
+          <i class="bi bi-star-fill"></i>
+          Skills & Requirements
+        </h2>
+        
+        <!-- Must Have Skills -->
+        <div class="skills-subsection" *ngIf="getMustHaveSkills().length > 0">
+          <h3 class="skills-title">Must Have Skills</h3>
+          <div class="skills-grid">
+            <div *ngFor="let skill of getMustHaveSkills()" class="skill-badge must-have">
+              <i class="bi bi-circle-fill"></i>
+              <span>{{ skill }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Good To Have Skills -->
+        <div class="skills-subsection" *ngIf="getGoodToHaveSkills().length > 0">
+          <h3 class="skills-title">Good To Have Skills</h3>
+          <div class="skills-grid">
+            <div *ngFor="let skill of getGoodToHaveSkills()" class="skill-badge good-to-have">
+              <i class="bi bi-circle-fill"></i>
+              <span>{{ skill }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Soft Skills -->
+        <div class="skills-subsection" *ngIf="getSoftSkills().length > 0">
+          <h3 class="skills-title">Soft Skills</h3>
+          <div class="skills-grid">
+            <div *ngFor="let skill of getSoftSkills()" class="skill-badge soft-skill">
+              <i class="bi bi-circle-fill"></i>
+              <span>{{ skill }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Information -->
+      <div class="content-section">
+        <h2 class="section-header">
+          <i class="bi bi-info-circle-fill"></i>
+          Additional Information
+        </h2>
+        
+        <div class="info-section">
+          <h3 class="info-subtitle">Work Experience</h3>
+          <div class="info-item">
+            <i class="bi bi-briefcase"></i>
+            <span>Prior experience of minimum 3 years in Full Stack Web Development (ASP.NET Core, MVC, Angular, SQL & Azure)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Apply Button (Sticky at Bottom) -->
+      <div class="apply-footer">
+        <button 
+          class="btn-apply-now" 
+          (click)="applyForJob()"
+          [disabled]="applying || applicationSuccess"
+        >
+          <span *ngIf="!applying && !applicationSuccess">
+            <i class="bi bi-send-fill"></i>
+            Apply Now
+          </span>
+          <span *ngIf="applying">
+            <span class="spinner-border spinner-border-sm"></span>
+            Submitting...
+          </span>
+          <span *ngIf="applicationSuccess">
+            <i class="bi bi-check-circle-fill"></i>
+            Applied
+          </span>
+        </button>
+        <p class="apply-note" *ngIf="!isAuthenticated">
+          <i class="bi bi-info-circle-fill"></i>
+          You will be redirected to login before applying
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

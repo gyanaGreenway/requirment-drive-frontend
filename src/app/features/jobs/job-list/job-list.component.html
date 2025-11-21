@@ -35,6 +35,12 @@
     {{ error }}
     <button type="button" class="btn-close" (click)="error = null"></button>
   </div>
+  <!-- Delete Error Message -->
+  <div *ngIf="deleteError" class="alert alert-warning alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+    {{ deleteError }}
+    <button type="button" class="btn-close" (click)="deleteError = null"></button>
+  </div>
 
   <!-- Loading State -->
   <div *ngIf="loading" class="text-center py-5">
@@ -59,7 +65,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let job of jobs">
+            <tr *ngFor="let job of jobs" (contextmenu)="onRowRightClick($event, job)" class="table-row">
               <td>
                 <strong>{{ job.title }}</strong>
               </td>
@@ -128,6 +134,27 @@
   </div>
 </div>
 
+<!-- Context Menu -->
+<div *ngIf="showContextMenu" 
+     class="context-menu" 
+     [style.left.px]="contextMenuX" 
+     [style.top.px]="contextMenuY"
+     (click)="$event.stopPropagation()">
+  <div class="context-menu-header">
+    <i class="bi bi-briefcase-fill"></i>
+    <span>{{ selectedJob?.title }}</span>
+  </div>
+  <div class="context-menu-divider"></div>
+  <button class="context-menu-item" (click)="shareJob()">
+    <i class="bi bi-share-fill"></i>
+    <span>Share Job</span>
+  </button>
+  <button class="context-menu-item" (click)="generateLink()">
+    <i class="bi bi-link-45deg"></i>
+    <span>Generate Link</span>
+  </button>
+</div>
+
 <div *ngIf="showDeleteConfirm" class="confirm-overlay" role="dialog" aria-modal="true" aria-live="assertive">
   <div class="confirm-card">
     <div class="confirm-icon">
@@ -149,6 +176,9 @@
         <span *ngIf="deleteInProgress" class="spinner-border spinner-border-sm me-2"></span>
         Delete
       </button>
+    </div>
+    <div *ngIf="deleteError" class="mt-3 small text-warning">
+      <i class="bi bi-info-circle me-1"></i>{{ deleteError }}
     </div>
   </div>
 </div>

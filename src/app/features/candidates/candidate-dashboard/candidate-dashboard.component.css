@@ -204,6 +204,121 @@
   overflow: hidden;
 }
 
+/* ===== QUICK LINKS (Two Tile Layout) ===== */
+.quick-links-section.compact {
+  background: transparent;
+  margin-bottom: 25px;
+}
+
+.quick-links-header h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a1f3a;
+  margin: 0 0 4px 0;
+}
+
+.quick-links-header p {
+  font-size: 0.8rem;
+  color: #7c8aad;
+  margin: 0 0 16px 0;
+}
+
+.quick-links-two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.quick-link-tile {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: white;
+  padding: 18px 22px;
+  border-radius: 14px;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  border: 1px solid #eef1f6;
+  transition: all .35s ease;
+}
+
+.quick-link-tile:before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(102,126,234,0.12) 0%, rgba(118,75,162,0.12) 100%);
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+
+.quick-link-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -6px rgba(102,126,234,0.25);
+  border-color: #d9e2ef;
+}
+
+.quick-link-tile:hover:before { opacity: 1; }
+
+.quick-link-tile.profile .tile-icon-wrap { background: linear-gradient(135deg,#667eea,#764ba2); }
+.quick-link-tile.jobs .tile-icon-wrap { background: linear-gradient(135deg,#43e97b,#38f9d7); }
+
+.tile-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  position: relative;
+}
+
+.tile-icon {
+  transform: translateY(1px);
+}
+
+.tile-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1f3a;
+  letter-spacing: .3px;
+}
+
+.tile-content p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #7c8aad;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.tile-arrow {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: #c0c7d6;
+  transition: color .35s ease, transform .35s ease;
+}
+
+.quick-link-tile:hover .tile-arrow {
+  color: #667eea;
+  transform: translateX(4px);
+}
+
+@media (max-width: 640px) {
+  .quick-links-two { grid-template-columns: 1fr; }
+  .quick-link-tile { padding: 16px 18px; }
+  .tile-icon-wrap { width: 40px; height: 40px; font-size: 1.2rem; }
+}
+
 .content-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

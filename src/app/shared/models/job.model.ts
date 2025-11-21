@@ -1,9 +1,11 @@
 export interface Job {
   id: number;
+  publicId: string;
   title: string;
   description: string;
   department: string;
   location: string;
+  salary?: number;
   salaryRange?: string;
   requirements?: string;
   postedDate: Date;

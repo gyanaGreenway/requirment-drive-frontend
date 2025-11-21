@@ -1,0 +1,173 @@
+<div class="public-jobs-container">
+  <!-- Header -->
+  <div class="jobs-header">
+    <div class="header-content">
+      <button class="btn-back" (click)="backToDashboard()">
+        <i class="bi bi-arrow-left"></i>
+        Back to Dashboard
+      </button>
+      <h1>Browse Available Jobs</h1>
+      <p class="subtitle">Find your next career opportunity</p>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <i class="bi bi-search search-icon"></i>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search by job title, department, or location..."
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+        />
+      </div>
+      <button class="btn-search" (click)="onSearch()">
+        Search
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="bi bi-exclamation-circle me-2"></i>
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = null"></button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading jobs...</span>
+    </div>
+    <p class="loading-text">Loading available positions...</p>
+  </div>
+
+  <!-- Jobs List -->
+  <div *ngIf="!loading && jobs.length > 0" class="jobs-list">
+    <div *ngFor="let job of jobs" class="job-card" (click)="viewJobDetails(job.publicId)">
+      <!-- Job Header -->
+      <div class="job-header">
+        <div class="company-logo">
+          <img src="assets/company-logo.png" alt="Company" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMGQ2ZWZkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiPkU8L3RleHQ+PC9zdmc+'">
+        </div>
+        <div class="job-title-section">
+          <h2 class="job-title">{{ job.title }}</h2>
+          <p class="company-name">EcoTech Solutions</p>
+        </div>
+      </div>
+
+      <!-- Job Meta Info -->
+      <div class="job-meta-row">
+        <span class="meta-badge">
+          <i class="bi bi-geo-alt-fill"></i>
+          {{ job.location }}
+        </span>
+        <span class="meta-badge">
+          <i class="bi bi-clock-fill"></i>
+          Full Time
+        </span>
+        <span class="meta-badge">
+          <i class="bi bi-briefcase-fill"></i>
+          {{ job.department }}
+        </span>
+        <span class="meta-badge" *ngIf="job.salary && job.salary > 0">
+          <i class="bi bi-currency-rupee"></i>
+          {{ formatSalary(job) }}
+        </span>
+      </div>
+
+      <!-- Job Description -->
+      <div class="job-description">
+        <p>{{ job.description && job.description.length > 200 ? (job.description | slice:0:200) + '...' : job.description }}</p>
+      </div>
+
+      <!-- Key Responsibilities -->
+      <div class="job-section" *ngIf="job.requirements">
+        <h3 class="section-title">
+          <i class="bi bi-card-checklist"></i>
+          Key Requirements
+        </h3>
+        <div class="requirements-list">
+          <div *ngFor="let req of getRequirementsList(job)" class="requirement-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>{{ req }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skills Section -->
+      <div class="job-section skills-section" *ngIf="job.requirements">
+        <h3 class="section-title">
+          <i class="bi bi-star-fill"></i>
+          Must Have Skills
+        </h3>
+        <div class="skills-tags">
+          <span *ngFor="let skill of getMustHaveSkills(job)" class="skill-tag must-have">
+            <i class="bi bi-circle-fill"></i>
+            {{ skill }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="job-card-footer">
+        <div class="footer-info">
+          <span class="posted-date" *ngIf="job.postedDate">
+            <i class="bi bi-calendar3"></i>
+            Posted {{ getRelativeTime(job.postedDate) }}
+          </span>
+          <span class="closing-date" *ngIf="job.closingDate">
+            <i class="bi bi-clock-history"></i>
+            Closes {{ job.closingDate | date:'MMM d, yyyy' }}
+          </span>
+        </div>
+        <button class="btn-apply" (click)="applyForJob(job.publicId); $event.stopPropagation()">
+          <i class="bi bi-send-fill"></i>
+          Apply Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && jobs.length === 0" class="empty-state">
+    <div class="empty-icon">
+      <i class="bi bi-briefcase-fill"></i>
+    </div>
+    <h3>No Jobs Available</h3>
+    <p>There are currently no open positions matching your criteria. Please check back later or adjust your search.</p>
+    <button class="btn-back-empty" (click)="backToDashboard()">
+      <i class="bi bi-arrow-left"></i>
+      Back to Dashboard
+    </button>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="pagedResult && pagedResult.totalPages > 1" class="pagination-section">
+    <nav>
+      <ul class="pagination">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <a class="page-link" (click)="currentPage > 1 && onPageChange(currentPage - 1)">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        </li>
+        <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+          <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === pagedResult.totalPages">
+          <a class="page-link" (click)="currentPage < pagedResult.totalPages && onPageChange(currentPage + 1)">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <p class="pagination-info">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} - 
+      {{ currentPage * pageSize > pagedResult.totalCount ? pagedResult.totalCount : currentPage * pageSize }} 
+      of {{ pagedResult.totalCount }} jobs
+    </p>
+  </div>
+</div>

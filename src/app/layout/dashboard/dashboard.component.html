@@ -37,6 +37,13 @@
 
   <!-- Main Content -->
   <main class="main-content">
+    <!-- Session Expiry Banner -->
+    <div *ngIf="showSessionBanner" class="alert alert-warning d-flex align-items-center" style="margin: 0 1rem 1rem 1rem;">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <div>
+        Your session will expire in <strong>{{ sessionMinutesLeft }}</strong> minute{{ sessionMinutesLeft === 1 ? '' : 's' }}. Please save your work.
+      </div>
+    </div>
     <!-- Top Navigation / Header -->
     <header class="topbar">
       <div class="header-left">

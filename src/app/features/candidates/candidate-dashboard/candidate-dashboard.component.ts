@@ -20,7 +20,7 @@ import { PagedResult } from '../../../shared/models/paged-result.model';
   styleUrls: ['./candidate-dashboard.component.css']
 })
 export class CandidateDashboardComponent implements OnInit {
-  candidateId: number = 1; // This should come from auth service
+  candidateId: number | null = null;
   candidate: Candidate | null = null;
   applications: JobApplication[] = [];
   jobs: Map<number, Job> = new Map();
@@ -38,6 +38,10 @@ export class CandidateDashboardComponent implements OnInit {
   loading = false;
   error: string | null = null;
   selectedStatus?: ApplicationStatus;
+
+  // Session warning
+  sessionMinutesLeft: number | null = null;
+  showSessionBanner = false;
   
   ApplicationStatus = ApplicationStatus;
   statusFilterOptions = [
@@ -72,15 +76,51 @@ export class CandidateDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadCandidateData();
+    // Get candidateId from auth service
+    const candidateId = this.authService.getCandidateId();
+    if (candidateId) {
+      this.candidateId = candidateId;
+      this.loadCandidateData();
+    } else {
+      // Try to fetch from auth/me endpoint
+      this.authService.getCurrentUserProfile().subscribe({
+        next: (profile) => {
+          this.candidateId = profile.candidateId || profile.id;
+          if (this.candidateId) {
+            this.loadCandidateData();
+          } else {
+            this.error = 'Unable to load your profile. Please login again.';
+            this.loading = false;
+          }
+        },
+        error: (err) => {
+          this.error = 'Please login to view your dashboard.';
+          this.loading = false;
+          console.error(err);
+          // Redirect to login after a delay
+          setTimeout(() => {
+            this.router.navigate(['/candidate-login']);
+          }, 2000);
+        }
+      });
+    }
+
+    // Subscribe to session warnings
+    this.authService.sessionWarningMinutesLeft$.subscribe(mins => {
+      this.sessionMinutesLeft = mins;
+      this.showSessionBanner = mins !== null && mins >= 0;
+    });
   }
 
   loadCandidateData(): void {
+    if (!this.candidateId) return;
+    
+    const id = this.candidateId; // Type narrowing
     this.loading = true;
     this.error = null;
 
     // Load candidate info
-    this.candidateService.getCandidate(this.candidateId).subscribe({
+    this.candidateService.getCandidate(id).subscribe({
       next: (candidate) => {
         this.candidate = candidate;
         this.saveToLocalStorage();
@@ -90,7 +130,7 @@ export class CandidateDashboardComponent implements OnInit {
 
     // Load applications for this candidate
     this.applicationService.getApplications({ 
-      candidateId: this.candidateId,
+      candidateId: id,
       pageNumber: 1,
       pageSize: 100 
     }).subscribe({
@@ -151,18 +191,29 @@ export class CandidateDashboardComponent implements OnInit {
   }
 
   getJobTitle(jobId: number): string {
-    return this.jobs.get(jobId)?.title || `Job #${jobId}`;
+    // Prefer embedded job info from application to avoid async race
+    const embedded = this.applications.find(a => a.jobId === jobId)?.job?.title;
+    if (embedded) return embedded;
+    const fetched = this.jobs.get(jobId)?.title;
+    if (fetched) return fetched;
+    return `Job #${jobId}`;
   }
 
   getJobCompany(jobId: number): string {
+    const embedded = this.applications.find(a => a.jobId === jobId)?.job?.department;
+    if (embedded) return embedded;
     return this.jobs.get(jobId)?.department || '-';
   }
 
   getJobDepartment(jobId: number): string {
+    const embedded = this.applications.find(a => a.jobId === jobId)?.job?.department;
+    if (embedded) return embedded;
     return this.jobs.get(jobId)?.department || '-';
   }
 
   getJobLocation(jobId: number): string {
+    const embedded = this.applications.find(a => a.jobId === jobId)?.job?.location;
+    if (embedded) return embedded;
     return this.jobs.get(jobId)?.location || '-';
   }
 

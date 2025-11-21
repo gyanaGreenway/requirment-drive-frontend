@@ -47,6 +47,7 @@ export interface UpdateApplicationStatusDto {
   applicationId: number;
   status: ApplicationStatus;
   notes?: string;
+  changedBy?: string;
 }
 
 export interface ApplicationFilter {

@@ -13,15 +13,43 @@ import { CandidateProfileComponent } from './features/candidates/candidate-profi
 import { ApplicationListComponent } from './features/applications/application-list/application-list.component';
 import { ApplicationStatusComponent } from './features/applications/application-status/application-status.component';
 import { ApplicationCreateComponent } from './features/applications/application-create/application-create.component';
+import { PublicJobsComponent } from './features/public-jobs/public-jobs.component';
+import { PublicJobDetailsComponent } from './features/public-jobs/public-job-details.component';
+import { JobApplicationComponent } from './features/public-jobs/job-application.component';
+import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: 'candidate-login', component: CandidateLoginComponent },
   { path: 'hr-login', component: HrLoginComponent },
-  { path: 'candidate-dashboard', component: CandidateDashboardComponent },
-  { path: 'candidate-profile', component: CandidateProfileComponent },
+  { 
+    path: 'candidate-dashboard', 
+    component: CandidateDashboardComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'candidate' }
+  },
+  { 
+    path: 'candidate-profile', 
+    component: CandidateProfileComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'candidate' }
+  },
+  { 
+    path: 'public-jobs', 
+    component: PublicJobsComponent
+  },
+  { 
+    path: 'public-jobs/:id', 
+    component: PublicJobDetailsComponent
+  },
+  { 
+    path: 'public-jobs/:id/apply', 
+    component: JobApplicationComponent
+  },
   { 
     path: 'dashboard', 
     component: DashboardComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'hr' },
     children: [
       { path: 'jobs', component: JobListComponent },
       { path: 'jobs/create', component: JobCreateComponent },

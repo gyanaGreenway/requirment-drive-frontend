@@ -1,6 +1,10 @@
 export const environment = {
   production: false,
-  // Use relative base in dev so the Angular proxy can avoid CORS
-  apiUrl: '/recruitment/api/v1'
+  // Base API path proxied by Angular dev server
+  apiUrl: '/recruitment/api/v1',
+  // Configurable public jobs endpoint segment (without leading slash)
+  publicJobsEndpoint: 'public/PublicJobs',
+  // Primary auth login endpoint segment
+  authLoginEndpoint: 'auth/login'
 };
 

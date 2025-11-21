@@ -1,0 +1,249 @@
+<div class="application-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="loading-text">Loading job details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="alert alert-danger">
+      <i class="bi bi-exclamation-circle"></i>
+      {{ error }}
+    </div>
+    <button class="btn-back" (click)="backToJobDetails()">
+      <i class="bi bi-arrow-left"></i>
+      Back to Job Details
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && job" class="application-content">
+    <!-- Stepper Header -->
+    <div class="stepper-header">
+      <h1 class="application-title">Applying for - {{ job.title }}</h1>
+      <div class="stepper">
+        <div *ngFor="let step of steps; let i = index" class="step-wrapper">
+          <div class="step" [class.active]="step.number === currentStep" [class.completed]="step.number < currentStep">
+            <div class="step-number">{{ step.number }}</div>
+            <div class="step-label">{{ step.label }}</div>
+          </div>
+          <div *ngIf="i < steps.length - 1" class="step-connector"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="content-layout">
+      <!-- Left Column - Job Details -->
+      <div class="job-details-column">
+        <div class="job-header">
+          <div class="company-logo">
+            <img src="assets/company-logo.png" alt="EcoTech" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxMiIgZmlsbD0iIzBkNmVmZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjMyIiBmaWxsPSJ3aGl0ZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSJib2xkIj5FPC90ZXh0Pjwvc3ZnPg=='">
+          </div>
+          <div class="job-header-info">
+            <h2 class="job-title">{{ job.title }}</h2>
+            <p class="company-name">
+              <span>EcoTech</span>
+              <a href="#" class="company-link">
+                <i class="bi bi-box-arrow-up-right"></i>
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <div class="meta-badges">
+          <span class="badge-item">
+            <i class="bi bi-geo-alt-fill"></i>
+            {{ job.location }}
+          </span>
+          <span class="badge-item">
+            <i class="bi bi-clock-fill"></i>
+            Full Time
+          </span>
+          <span class="badge-item">
+            <i class="bi bi-briefcase-fill"></i>
+            In Office
+          </span>
+          <span class="badge-item">
+            <i class="bi bi-calendar-event"></i>
+            3 - 6 years experience
+          </span>
+        </div>
+
+        <div class="job-description">
+          <p>{{ job.description }}</p>
+        </div>
+
+        <div class="section" *ngIf="getKeyResponsibilities().length > 0">
+          <h3 class="section-title">
+            <i class="bi bi-card-checklist"></i>
+            Key Responsibilities
+          </h3>
+          <ul class="list-items">
+            <li *ngFor="let item of getKeyResponsibilities()">
+              <i class="bi bi-check-circle-fill"></i>
+              <span>{{ item }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">
+            <i class="bi bi-star-fill"></i>
+            Skills & Requirements
+          </h3>
+          
+          <div class="skills-group" *ngIf="getMustHaveSkills().length > 0">
+            <h4 class="skills-subtitle">Must Have Skills</h4>
+            <div class="skills-list">
+              <span *ngFor="let skill of getMustHaveSkills()" class="skill-tag must-have">
+                <i class="bi bi-circle-fill"></i>
+                {{ skill }}
+              </span>
+            </div>
+          </div>
+
+          <div class="skills-group" *ngIf="getGoodToHaveSkills().length > 0">
+            <h4 class="skills-subtitle">Good To Have Skills</h4>
+            <div class="skills-list">
+              <span *ngFor="let skill of getGoodToHaveSkills()" class="skill-tag good-to-have">
+                <i class="bi bi-circle-fill"></i>
+                {{ skill }}
+              </span>
+            </div>
+          </div>
+
+          <div class="skills-group" *ngIf="getSoftSkills().length > 0">
+            <h4 class="skills-subtitle">Soft Skills</h4>
+            <div class="skills-list">
+              <span *ngFor="let skill of getSoftSkills()" class="skill-tag soft-skill">
+                <i class="bi bi-circle-fill"></i>
+                {{ skill }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">
+            <i class="bi bi-info-circle-fill"></i>
+            Additional Information
+          </h3>
+          <div class="info-block">
+            <h4 class="info-title">Work Experience</h4>
+            <div class="info-content">
+              <i class="bi bi-briefcase"></i>
+              <span>Prior experience of minimum 3 years in Full Stack Web Development (ASP.NET Core, MVC, Angular, SQL & Azure)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column - Application Form -->
+      <div class="form-column">
+        <div class="form-card">
+          <div class="company-logo-small">
+            <img src="assets/company-logo.png" alt="EcoTech" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMGQ2ZWZkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiPkU8L3RleHQ+PC9zdmc+'">
+          </div>
+
+          <div class="info-notice">
+            <i class="bi bi-info-circle-fill"></i>
+            <span>Email and Phone Number provided here will be used for Interview and further communication.</span>
+          </div>
+
+          <!-- Success Message -->
+          <div *ngIf="submitSuccess" class="alert alert-success">
+            <i class="bi bi-check-circle-fill"></i>
+            Application submitted successfully! Redirecting...
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="submitError" class="alert alert-danger">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            {{ submitError }}
+          </div>
+
+          <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+              <label for="name">Name <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="name" 
+                class="form-control" 
+                formControlName="name"
+                [class.is-invalid]="applicationForm.get('name')?.invalid && applicationForm.get('name')?.touched"
+              >
+              <div class="error-message" *ngIf="getFieldError('name')">
+                {{ getFieldError('name') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email <span class="required">*</span></label>
+              <input 
+                type="email" 
+                id="email" 
+                class="form-control" 
+                formControlName="email"
+                [class.is-invalid]="applicationForm.get('email')?.invalid && applicationForm.get('email')?.touched"
+              >
+              <div class="error-message" *ngIf="getFieldError('email')">
+                {{ getFieldError('email') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="phone">Phone <span class="required">*</span></label>
+              <div class="phone-input">
+                <div class="country-code">
+                  <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjQiIGhlaWdodD0iOCIgZmlsbD0iI0ZGOTkzMyIvPjxyZWN0IHk9IjgiIHdpZHRoPSIyNCIgaGVpZ2h0PSI4IiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHk9IjE2IiB3aWR0aD0iMjQiIGhlaWdodD0iOCIgZmlsbD0iIzEzOEEwOCIvPjwvc3ZnPg==" alt="IN">
+                  <span>IN</span>
+                </div>
+                <input 
+                  type="tel" 
+                  id="phone" 
+                  class="form-control" 
+                  formControlName="phone"
+                  placeholder="+91"
+                  [class.is-invalid]="applicationForm.get('phone')?.invalid && applicationForm.get('phone')?.touched"
+                >
+              </div>
+              <div class="error-message" *ngIf="getFieldError('phone')">
+                {{ getFieldError('phone') }}
+              </div>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  formControlName="agreeTerms"
+                >
+                <span>I have read and agreed to the <a href="#" class="policy-link">Privacy Policy</a>.</span>
+              </label>
+            </div>
+
+            <button 
+              type="submit" 
+              class="btn-submit" 
+              [disabled]="submitting || submitSuccess"
+            >
+              <span *ngIf="!submitting && !submitSuccess">Apply Now</span>
+              <span *ngIf="submitting">
+                <span class="spinner-border spinner-border-sm"></span>
+                Submitting...
+              </span>
+              <span *ngIf="submitSuccess">
+                <i class="bi bi-check-circle-fill"></i>
+                Applied
+              </span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

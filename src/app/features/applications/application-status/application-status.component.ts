@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApplicationService } from '../../../core/services/application.service';
+import { AuthService } from '../../../core/services/auth';
 import {
   JobApplication,
   ApplicationStatus,
@@ -38,6 +39,11 @@ export class ApplicationStatusComponent implements OnInit {
     ApplicationStatus.Hired,
     ApplicationStatus.Rejected
   ];
+  
+  // Define which statuses in journey are mutually exclusive
+  private readonly exclusiveStatuses = [
+    [ApplicationStatus.Hired, ApplicationStatus.Rejected]
+  ];
   readonly statusOptions: ApplicationStatus[] = [
     ApplicationStatus.New,
     ApplicationStatus.Shortlisted,
@@ -62,7 +68,8 @@ export class ApplicationStatusComponent implements OnInit {
     private applicationService: ApplicationService,
     private router: Router,
     private route: ActivatedRoute,
-    private toast: ToastService
+    private toast: ToastService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -129,10 +136,14 @@ export class ApplicationStatusComponent implements OnInit {
     this.submitting = true;
     this.error = null;
 
+    const currentUser = this.authService.getCurrentUser();
+    const changedBy = currentUser?.email || currentUser?.username || 'HR Manager';
+
     const updateDto: UpdateApplicationStatusDto = {
       applicationId: this.applicationId,
       status: this.newStatus,
-      notes: this.statusNotes
+      notes: this.statusNotes,
+      changedBy: changedBy
     };
 
     this.applicationService.updateApplicationStatus(updateDto).subscribe({
@@ -178,13 +189,37 @@ export class ApplicationStatusComponent implements OnInit {
   }
 
   isStatusCompleted(status: ApplicationStatus): boolean {
+    // Check if status is in history
     const historyMatch = this.history.some(entry => this.toStatusKey(entry.status) === status);
     if (historyMatch) return true;
+    
     const current = this.toStatusKey(this.application?.status);
     if (current === undefined) return false;
+    
+    // If current status matches, it's completed
+    if (current === status) return true;
+    
+    // Check if status is in an exclusive group with current status
+    for (const group of this.exclusiveStatuses) {
+      if (group.includes(status) && group.includes(current)) {
+        // Only the current one is completed, not the other
+        return false;
+      }
+    }
+    
+    // For sequential statuses (New, Shortlisted)
     const targetIndex = this.statusJourney.indexOf(status);
     const currentIndex = this.statusJourney.indexOf(current);
-    return currentIndex >= targetIndex && currentIndex !== -1 && targetIndex !== -1;
+    
+    if (targetIndex === -1 || currentIndex === -1) return false;
+    
+    // Only mark as completed if target comes before current in sequence
+    // and target is before the branching point (Hired/Rejected)
+    if (targetIndex < 2) { // New or Shortlisted
+      return currentIndex >= targetIndex;
+    }
+    
+    return false;
   }
 
   isStatusActive(status: ApplicationStatus): boolean {

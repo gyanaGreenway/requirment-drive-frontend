@@ -41,28 +41,43 @@
 
   <!-- Main Content -->
   <div class="dashboard-content">
-        <!-- Quick Links Section -->
-        <div class="quick-links-section">
+    <!-- Session Expiry Banner -->
+    <div *ngIf="showSessionBanner" class="alert alert-warning d-flex align-items-center" style="margin-bottom: 1rem;">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <div>
+        Your session will expire in <strong>{{ sessionMinutesLeft }}</strong> minute{{ sessionMinutesLeft === 1 ? '' : 's' }}. Please save your work.
+      </div>
+    </div>
+        <!-- Quick Links (Profile & Browse Jobs only) -->
+        <div class="quick-links-section compact">
           <div class="quick-links-header">
             <h3>Quick Links</h3>
-            <p>Access your profile, applications, jobs, and notifications</p>
+            <p>Manage your profile or explore new openings</p>
           </div>
-          <div class="quick-links-grid">
-            <a routerLink="/candidate-profile" class="quick-link-card">
-              <span class="quick-link-icon">👤</span>
-              <span class="quick-link-label">My Profile</span>
+          <div class="quick-links-two">
+            <a routerLink="/candidate-profile" class="quick-link-tile profile">
+              <div class="tile-icon-wrap">
+                <div class="tile-icon">👤</div>
+              </div>
+              <div class="tile-content">
+                <h4>My Profile</h4>
+                <p>View & update your personal details</p>
+              </div>
+              <div class="tile-arrow">
+                <i class="bi bi-arrow-right-short"></i>
+              </div>
             </a>
-            <a routerLink="/candidate-dashboard" class="quick-link-card">
-              <span class="quick-link-icon">📊</span>
-              <span class="quick-link-label">Applications</span>
-            </a>
-            <a routerLink="/dashboard/jobs" class="quick-link-card">
-              <span class="quick-link-icon">💼</span>
-              <span class="quick-link-label">Browse Jobs</span>
-            </a>
-            <a routerLink="/notifications" class="quick-link-card">
-              <span class="quick-link-icon">🔔</span>
-              <span class="quick-link-label">Notifications</span>
+            <a routerLink="/public-jobs" class="quick-link-tile jobs">
+              <div class="tile-icon-wrap">
+                <div class="tile-icon">💼</div>
+              </div>
+              <div class="tile-content">
+                <h4>Browse Jobs</h4>
+                <p>Discover active opportunities</p>
+              </div>
+              <div class="tile-arrow">
+                <i class="bi bi-arrow-right-short"></i>
+              </div>
             </a>
           </div>
         </div>
@@ -99,7 +114,7 @@
         <!-- Empty State -->
         <div *ngIf="!loading && getFilteredApplications().length === 0" class="empty-state">
           <p>📭 No applications found</p>
-          <a routerLink="/dashboard/jobs" class="link-btn">Browse Jobs</a>
+          <a routerLink="/public-jobs" class="link-btn">Browse Jobs</a>
         </div>
 
         <!-- Jobs Table -->
