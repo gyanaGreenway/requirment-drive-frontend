@@ -1,0 +1,99 @@
+<section class="tasks">
+  <header class="tasks__header">
+    <div>
+      <h1>Onboarding Mission Control</h1>
+      <p>{{ missionStatement }}</p>
+    </div>
+    <div class="tasks__actions">
+      <button type="button" class="btn btn-ghost">Share runbook</button>
+      <button type="button" class="btn btn-primary">Create task</button>
+    </div>
+  </header>
+
+  <section class="tasks__summary">
+    <article class="summary-card">
+      <h2>{{ totalTasks }}</h2>
+      <p>Checklist items this sprint</p>
+      <span>{{ dueToday }} scheduled for today</span>
+    </article>
+    <article class="summary-card">
+      <h2>{{ completedTasks }}</h2>
+      <p>Closed with impact stories</p>
+      <span>{{ blockedTasks }} flagged for help</span>
+    </article>
+  </section>
+
+  <div class="tasks__filters">
+    <div class="chip-group">
+      <button
+        type="button"
+        class="chip"
+        *ngFor="let filter of filters"
+        [class.chip--active]="selectedFilter === filter.id"
+        (click)="setFilter(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+    <button type="button" class="btn btn-outline">Export playbook</button>
+  </div>
+
+  <section class="tasks__grid" *ngIf="filteredTasks.length; else emptyTasks">
+    <article class="task-card" *ngFor="let task of filteredTasks">
+      <header class="task-card__header">
+        <div>
+          <h2>{{ task.title }}</h2>
+          <p>{{ task.ownerTeam }} · {{ task.category }}</p>
+        </div>
+        <span [ngClass]="getStatusBadge(task.status)">{{ task.status }}</span>
+      </header>
+
+      <div class="task-card__meta">
+        <div>
+          <span class="label">Assignee</span>
+          <strong>{{ task.assignee }}</strong>
+        </div>
+        <div>
+          <span class="label">Touchpoints</span>
+          <strong>{{ task.touchpoints.join(', ') }}</strong>
+        </div>
+        <div>
+          <span class="label">Timeline</span>
+          <span [ngClass]="getTimelineClass(task)">{{ getTimelineLabel(task) }}</span>
+        </div>
+      </div>
+
+      <div class="task-card__progress">
+        <span>Progress</span>
+        <div class="progress">
+          <span class="progress__fill" [style.width]="getProgressWidth(task)"></span>
+        </div>
+        <strong>{{ task.progress }}%</strong>
+      </div>
+
+      <p class="task-card__notes">{{ task.notes }}</p>
+
+      <footer class="task-card__footer">
+        <button type="button" class="btn-light">View checklist</button>
+        <button type="button" class="btn-outline">Assign backup</button>
+        <button type="button" class="btn-link">Log update</button>
+      </footer>
+    </article>
+  </section>
+
+  <ng-template #emptyTasks>
+    <section class="tasks__empty">
+      <h3>No tasks matched this filter</h3>
+      <p>Spin up a new play or reset filters to view the full plan.</p>
+    </section>
+  </ng-template>
+
+  <section class="tasks__roadmap">
+    <h2>Vision roadmap</h2>
+    <ul>
+      <li>Automated choreographies: assign owners the moment an offer moves to accepted.</li>
+      <li>Sentiment scoring after each buddy or manager touchpoint.</li>
+      <li>Completion pulse that syncs to payroll and access provisioning.</li>
+    </ul>
+  </section>
+</section>

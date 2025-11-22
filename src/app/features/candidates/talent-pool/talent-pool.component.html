@@ -1,0 +1,15 @@
+<section class="section">
+  <h2>Talent Pool</h2>
+  <div class="metrics">
+    <div class="metric"><strong>{{ total }}</strong><span>Total Candidates</span></div>
+    <div class="metric"><strong>{{ newThisWeek }}</strong><span>New This Week</span></div>
+  </div>
+  <h3>Skills Distribution</h3>
+  <div class="skills">
+    <div class="skill" *ngFor="let s of skills">
+      <span class="skill-name">{{ s.name }}</span>
+      <div class="bar"><div class="fill" [style.width.%]="(s.count / total) * 100"></div></div>
+      <span class="count">{{ s.count }}</span>
+    </div>
+  </div>
+</section>

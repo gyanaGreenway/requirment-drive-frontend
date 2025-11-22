@@ -1,0 +1,124 @@
+<section class="locations-view">
+  <header class="hero">
+    <div class="hero-copy">
+      <h1>Employee Locations</h1>
+      <p>{{ overview }}</p>
+      <div class="search-bar">
+        <label for="location-search">Search footprint</label>
+        <input
+          id="location-search"
+          type="search"
+          placeholder="Search by city, leader, or team"
+          [(ngModel)]="searchTerm"
+        />
+      </div>
+    </div>
+    <div class="hero-side">
+      <div class="hero-card">
+        <h2>Portfolio actions</h2>
+        <ul>
+          <li><span>Lease renewals</span><strong>Toronto · Feb 2026</strong></li>
+          <li><span>New market scan</span><strong>Mexico City shortlist</strong></li>
+          <li><span>Hybrid pilot</span><strong>Berlin flex desks Q1</strong></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <section class="metric-deck">
+    <article class="metric-card" *ngFor="let metric of metrics">
+      <header>
+        <span class="metric-label">{{ metric.label }}</span>
+        <span class="metric-delta" [ngClass]="'metric-delta--' + metric.trend">{{ metric.delta }}</span>
+      </header>
+      <strong>{{ metric.value }}</strong>
+    </article>
+  </section>
+
+  <section class="filters">
+    <div class="filter-group">
+      <span class="filter-heading">Region</span>
+      <button
+        type="button"
+        class="filter-button"
+        *ngFor="let filter of regionFilters"
+        [class.active]="selectedRegion === filter.id"
+        (click)="setRegion(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-heading">Site focus</span>
+      <button
+        type="button"
+        class="filter-button"
+        *ngFor="let filter of focusFilters"
+        [class.active]="selectedFocus === filter.id"
+        (click)="setFocus(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+  </section>
+
+  <section class="location-grid">
+    <article class="location-card" *ngFor="let location of filteredLocations; trackBy: trackByLocation">
+      <header class="location-header">
+        <div>
+          <h2>{{ location.city }}, {{ location.country }}</h2>
+          <p class="leader">Site lead: {{ location.leader }} · {{ location.timezone }}</p>
+        </div>
+        <span [ngClass]="getOccupancyClass(location)">{{ getCapacityUsage(location) }}% occupancy</span>
+      </header>
+
+      <div class="stat-grid">
+        <div class="stat">
+          <span class="stat-label">Headcount</span>
+          <strong>{{ location.headcount }}</strong>
+          <p>Capacity {{ location.capacity }}</p>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Remote mix</span>
+          <strong>{{ getRemoteBadge(location) }}</strong>
+          <p>{{ location.workspaceMix }}</p>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Focus area</span>
+          <strong class="focus-pill">{{ location.focus | titlecase }}</strong>
+          <p>Opened {{ location.opened | date: 'MMM yyyy' }}</p>
+        </div>
+      </div>
+
+      <div class="teams-section">
+        <span class="stat-label">Key teams</span>
+        <ul>
+          <li *ngFor="let team of location.keyTeams">{{ team }}</li>
+        </ul>
+      </div>
+
+      <div class="events-section" *ngIf="location.upcomingEvents.length">
+        <span class="stat-label">Upcoming events</span>
+        <div class="event-chips">
+          <span *ngFor="let event of location.upcomingEvents">{{ event }}</span>
+        </div>
+      </div>
+
+      <footer class="location-footer">
+        <button type="button">View workplace brief</button>
+        <button type="button" class="ghost">Notify facilities</button>
+      </footer>
+    </article>
+  </section>
+
+  <section class="empty-state" *ngIf="!filteredLocations.length">
+    <div class="empty-card">
+      <h3>No locations match the selected filters</h3>
+      <p>Reset filters or search to explore the full workplace footprint.</p>
+      <button
+        type="button"
+        (click)="setRegion('all'); setFocus('all'); searchTerm = ''"
+      >Reset filters</button>
+    </div>
+  </section>
+</section>

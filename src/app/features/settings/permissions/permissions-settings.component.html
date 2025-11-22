@@ -1,0 +1,16 @@
+<div class="page">
+  <header>
+    <h1>Permissions</h1>
+    <p>Review feature access assigned to each system role.</p>
+  </header>
+
+  <section class="role-grid">
+    <article class="role-card" *ngFor="let role of roles">
+      <h2>{{ role.name }}</h2>
+      <h3>Access Areas</h3>
+      <ul>
+        <li *ngFor="let area of role.access">{{ area }}</li>
+      </ul>
+    </article>
+  </section>
+</div>

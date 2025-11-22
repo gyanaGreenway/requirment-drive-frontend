@@ -1,0 +1,204 @@
+<section class="schedule">
+  <header class="schedule__header">
+    <div>
+      <h2>Schedule Interview</h2>
+      <p>Lock in the next conversation with a shareable agenda and automatic reminders.</p>
+    </div>
+    <div class="schedule__header-actions">
+      <button type="button" class="btn btn-ghost">Save as draft</button>
+      <button type="submit" form="scheduleForm" class="btn btn-primary">Publish interview</button>
+    </div>
+  </header>
+
+  <div class="schedule__layout">
+    <form id="scheduleForm" class="schedule__form" (ngSubmit)="schedule()">
+      <section class="form-card">
+        <div class="form-card__header">
+          <h3>Candidate context</h3>
+          <span class="form-card__hint">Pulls through to interviewer brief automatically.</span>
+        </div>
+        <div class="form-grid">
+          <label class="field">
+            <span>Candidate name</span>
+            <input type="text" name="candidate" [(ngModel)]="model.candidate" placeholder="eg. Mamta Sharma" />
+          </label>
+          <label class="field">
+            <span>Email for invite</span>
+            <input type="email" name="candidateEmail" [(ngModel)]="model.candidateEmail" placeholder="candidate@email.com" />
+          </label>
+          <label class="field">
+            <span>Role / requisition</span>
+            <input type="text" name="job" [(ngModel)]="model.job" placeholder="Senior React Engineer" />
+          </label>
+          <label class="field">
+            <span>Interview stage</span>
+            <select name="stage" [(ngModel)]="model.stage">
+              <option value="" disabled>Select stage</option>
+              <option *ngFor="let stage of stageOptions" [value]="stage">{{ stage }}</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-card">
+        <div class="form-card__header">
+          <h3>Interview panel & schedule</h3>
+          <span class="form-card__hint">Send invites in their preferred timezone with one click.</span>
+        </div>
+        <div class="form-grid">
+          <label class="field field--full">
+            <span>Interviewers</span>
+            <select
+              name="interviewers"
+              multiple
+              [(ngModel)]="model.interviewers"
+              aria-label="Select interviewers"
+            >
+              <option *ngFor="let interviewer of interviewerOptions" [value]="interviewer">
+                {{ interviewer }}
+              </option>
+            </select>
+            <small class="field__support">Hold Ctrl / Cmd to multi-select.</small>
+          </label>
+          <label class="field">
+            <span>Date</span>
+            <input type="date" name="date" [(ngModel)]="model.date" />
+          </label>
+          <label class="field">
+            <span>Start time</span>
+            <input type="time" name="time" [(ngModel)]="model.time" />
+          </label>
+          <label class="field">
+            <span>Timezone</span>
+            <select name="timezone" [(ngModel)]="model.timezone">
+              <option *ngFor="let option of timezoneOptions" [value]="option">{{ option }}</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Duration (mins)</span>
+            <input type="number" name="duration" [(ngModel)]="model.duration" min="15" step="15" />
+          </label>
+        </div>
+
+        <div class="slot-suggestions" *ngIf="availableTimeSlots.length">
+          <h4>Suggested slots</h4>
+          <div class="slot-suggestions__chips">
+            <button
+              type="button"
+              *ngFor="let slot of availableTimeSlots"
+              class="chip"
+              (click)="setSuggestedSlot(slot)"
+            >
+              <span class="chip__label">{{ slot.label }}</span>
+              <span>{{ slot.date | date: 'EEE, MMM d' }}</span>
+              <span>{{ slot.time }} · {{ slot.timezone }}</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-card">
+        <div class="form-card__header">
+          <h3>Logistics</h3>
+          <span class="form-card__hint">Share precise joining details for zero day-of confusion.</span>
+        </div>
+        <div class="form-grid">
+          <fieldset class="field field--inline">
+            <legend>Format</legend>
+            <label class="pill">
+              <input type="radio" name="locationType" value="virtual" [(ngModel)]="model.locationType" />
+              Virtual
+            </label>
+            <label class="pill">
+              <input type="radio" name="locationType" value="onsite" [(ngModel)]="model.locationType" />
+              Onsite
+            </label>
+          </fieldset>
+
+          <label class="field field--full" *ngIf="model.locationType === 'virtual'">
+            <span>Meeting link</span>
+            <input type="url" name="meetingLink" [(ngModel)]="model.meetingLink" placeholder="https://meet.example.com/interview" />
+          </label>
+
+          <label class="field field--full" *ngIf="model.locationType === 'onsite'">
+            <span>Office / room details</span>
+            <input type="text" name="locationDetail" [(ngModel)]="model.locationDetail" placeholder="RequirmentDrive HQ · Collaboration Room 4" />
+          </label>
+        </div>
+      </section>
+
+      <section class="form-card">
+        <div class="form-card__header">
+          <h3>Communication</h3>
+          <span class="form-card__hint">Notes and reminders go out with the invite.</span>
+        </div>
+        <div class="form-grid">
+          <label class="field field--full">
+            <span>Prep notes for candidate</span>
+            <textarea name="notesForCandidate" rows="3" [(ngModel)]="model.notesForCandidate" placeholder="Attach portfolio link, share presentation brief, etc."></textarea>
+          </label>
+          <label class="field field--full">
+            <span>Internal talking points</span>
+            <textarea name="notesForInterviewers" rows="3" [(ngModel)]="model.notesForInterviewers" placeholder="Key skills to probe, hiring signals to validate."></textarea>
+          </label>
+          <div class="field field--full">
+            <span>Reminder cadence</span>
+            <div class="chip-group">
+              <button
+                type="button"
+                class="chip"
+                *ngFor="let option of reminderOptions"
+                [class.chip--active]="isReminderSelected(option)"
+                (click)="toggleReminder(option)"
+              >
+                {{ option }}
+              </button>
+            </div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" name="sendCalendarInvite" [(ngModel)]="model.sendCalendarInvite" />
+            <span>Send smart calendar invites to everyone</span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" name="sharePrepDocs" [(ngModel)]="model.sharePrepDocs" />
+            <span>Attach interview prep docs and panel bios</span>
+          </label>
+        </div>
+      </section>
+    </form>
+
+    <aside class="schedule__sidebar">
+      <section class="summary">
+        <h3>Invite preview</h3>
+        <ul>
+          <li><strong>Candidate:</strong> {{ model.candidate || 'Pending selection' }}</li>
+          <li><strong>Interviewers:</strong> {{ model.interviewers.length ? model.interviewers.join(', ') : 'Assign panel' }}</li>
+          <li><strong>When:</strong> {{ model.date ? (model.date | date: 'fullDate') : 'Choose date' }} · {{ model.time || '--:--' }} · {{ model.timezone }}</li>
+          <li><strong>Format:</strong> {{ model.locationType === 'virtual' ? 'Virtual meeting' : 'Onsite' }}</li>
+          <li *ngIf="model.locationType === 'virtual' && model.meetingLink"><strong>Link:</strong> {{ model.meetingLink }}</li>
+          <li *ngIf="model.locationType === 'onsite' && model.locationDetail"><strong>Location:</strong> {{ model.locationDetail }}</li>
+          <li><strong>Reminders:</strong> {{ model.reminders.length ? model.reminders.join(', ') : 'None selected' }}</li>
+        </ul>
+        <p class="summary__footnote">We’ll create interviewer briefs, candidate emails, and Slack nudges automatically.</p>
+      </section>
+
+      <section class="playbook">
+        <h3>Interview playbook</h3>
+        <ol>
+          <li>Confirm interviewer availability via Google / Outlook sync.</li>
+          <li>Send candidate briefing within 30 minutes of scheduling.</li>
+          <li>Capture feedback in the Applicant Tracker within 24 hours.</li>
+        </ol>
+      </section>
+
+      <section class="roadmap">
+        <h3>On the roadmap</h3>
+        <ul>
+          <li>Auto-hold calendars while awaiting confirmation.</li>
+          <li>Candidate self-serve slot selection linked to panel availability.</li>
+          <li>Panel load balancing insights to avoid burnout.</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+</section>

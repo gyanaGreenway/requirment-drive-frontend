@@ -1,0 +1,88 @@
+<section class="completed-view">
+  <header class="hero">
+    <div class="hero-text">
+      <h1>Completed Investigations</h1>
+      <p>{{ celebrationStatement }}</p>
+    </div>
+    <div class="hero-metrics">
+      <article class="metric-card">
+        <span class="metric-label">Completed this week</span>
+        <strong>{{ totalCompleted }}</strong>
+        <p class="metric-sub">+2 vs last week</p>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Cleared without exceptions</span>
+        <strong>{{ clearedCount }}</strong>
+        <p class="metric-sub">{{ exceptionCount }} escalation(s) open</p>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Median turnaround</span>
+        <strong>{{ averageTurnaround }}<span class="metric-unit"> days</span></strong>
+        <p class="metric-sub">Target: &lt; 7 days</p>
+      </article>
+    </div>
+  </header>
+
+  <section class="toolbar">
+    <div class="filter-group">
+      <button
+        type="button"
+        class="filter-button"
+        *ngFor="let filter of filters"
+        [class.active]="selectedFilter === filter.id"
+        (click)="setFilter(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+    <div class="toolbar-actions">
+      <button type="button" class="export-button">Download audit report</button>
+      <button type="button" class="share-button">Share results with HRBP</button>
+    </div>
+  </section>
+
+  <section class="results-grid">
+    <article class="result-card" *ngFor="let result of filteredResults">
+      <header class="result-card__header">
+        <div>
+          <h2>{{ result.candidate }}</h2>
+          <p class="result-meta">{{ result.role }} · {{ result.location }}</p>
+        </div>
+        <span class="risk-label" [ngClass]="getRiskChipClass(result.risk)">{{ result.risk }}</span>
+      </header>
+
+      <div class="result-details">
+        <div>
+          <span class="detail-label">Checks run</span>
+          <strong>{{ result.checksCompleted }}</strong>
+        </div>
+        <div>
+          <span class="detail-label">Issues found</span>
+          <strong>{{ result.issuesFound }}</strong>
+        </div>
+        <div>
+          <span class="detail-label">Completed on</span>
+          <strong>{{ result.completedOn | date: 'MMM d, y' }}</strong>
+        </div>
+        <div>
+          <span class="detail-label">Turnaround</span>
+          <strong>{{ result.turnaroundDays }} days</strong>
+        </div>
+      </div>
+
+      <ul class="highlights">
+        <li *ngFor="let highlight of result.highlights">{{ highlight }}</li>
+      </ul>
+
+      <footer class="result-footer">
+        <div class="footer-left">
+          <span class="badge badge--id">{{ result.id }}</span>
+        </div>
+        <div class="footer-actions">
+          <button type="button" class="footer-button">View certificate</button>
+          <button type="button" class="footer-button footer-button--secondary">Schedule start date</button>
+        </div>
+      </footer>
+    </article>
+  </section>
+</section>

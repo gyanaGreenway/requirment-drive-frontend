@@ -1,0 +1,14 @@
+<section class="section">
+  <h2>HR Performance</h2>
+  <table class="table">
+    <thead><tr><th>Recruiter</th><th>Interviews</th><th>Hires</th><th>Hiring Rate %</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let r of recruiters">
+        <td>{{ r.name }}</td>
+        <td>{{ r.interviews }}</td>
+        <td>{{ r.hires }}</td>
+        <td>{{ r.hiringRate }}</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

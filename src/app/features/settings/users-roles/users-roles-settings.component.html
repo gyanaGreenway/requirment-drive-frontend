@@ -1,0 +1,169 @@
+<div class="users-view">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Access control</p>
+      <h1>Empower teams without compromising compliance</h1>
+      <p>
+        Centralize provisioning, enforce least privilege and surface the actions that keep hiring
+        decisions compliant. Switch the view to spotlight the access footprint for each team.
+      </p>
+      <div class="chip-group">
+        <button
+          class="chip"
+          *ngFor="let filter of filters"
+          [class.active]="selectedFilter === filter"
+          (click)="setFilter(filter)"
+        >
+          {{ filter }}
+        </button>
+      </div>
+    </div>
+    <div class="hero-metrics">
+      <article class="metric-card" *ngFor="let metric of accessMetrics">
+        <header>
+          <span class="metric-label">{{ metric.label }}</span>
+          <span [ngClass]="getTrendClass(metric.direction)">{{ metric.change }}</span>
+        </header>
+        <strong>{{ metric.value }}</strong>
+      </article>
+    </div>
+  </section>
+
+  <section class="roles-section">
+    <header class="section-head">
+      <div>
+        <h2>Role architecture</h2>
+        <p>Each role bundles the capabilities, audit posture and automations mapped to it.</p>
+      </div>
+      <button class="ghost">Create new role</button>
+    </header>
+    <div class="role-grid">
+      <article class="role-card" *ngFor="let role of roleCatalog">
+        <header>
+          <div>
+            <h3>{{ role.name }}</h3>
+            <p class="role-focus">{{ role.focus }}</p>
+          </div>
+          <span [ngClass]="getTrendClass(role.direction)">{{ role.change }}</span>
+        </header>
+        <p class="role-description">{{ role.description }}</p>
+        <ul class="privilege-list">
+          <li *ngFor="let privilege of role.privileges">{{ privilege }}</li>
+        </ul>
+        <div class="role-meta">
+          <span class="role-count">{{ role.members }} members</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="permission-board">
+    <header class="section-head">
+      <div>
+        <h2>Permission matrix</h2>
+        <p>See exactly who can act on sensitive modules and the guardrails that fire automatically.</p>
+      </div>
+      <span class="mini-pill">Quarterly audit in progress</span>
+    </header>
+    <div class="permission-table">
+      <div class="permission-row permission-head">
+        <span>Module</span>
+        <span>Role access</span>
+        <span>Automation notes</span>
+      </div>
+      <div class="permission-row" *ngFor="let entry of permissionMatrix">
+        <div class="permission-module">
+          <h3>{{ entry.module }}</h3>
+          <span class="criticality">Criticality: {{ entry.criticality }}</span>
+        </div>
+        <div class="permission-access">
+          <span
+            *ngFor="let access of entry.access"
+            [ngClass]="getAccessClass(access.level)"
+          >
+            {{ access.role }} · {{ access.level | titlecase }}
+          </span>
+        </div>
+        <p class="permission-automation">{{ entry.automation }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="team-panel">
+    <div class="team-roster">
+      <header class="section-head">
+        <div>
+          <h2>Directory & status</h2>
+          <p>Track who is active, awaiting onboarding or requires additional verification.</p>
+        </div>
+        <button class="ghost">Export roster</button>
+      </header>
+      <ul class="member-list">
+        <li *ngFor="let member of teamRoster">
+          <div class="member-primary">
+            <h3>{{ member.name }}</h3>
+            <span class="member-email">{{ member.email }}</span>
+          </div>
+          <div class="member-details">
+            <span class="role-tag">{{ member.role }}</span>
+            <span class="dept-tag">{{ member.department }}</span>
+          </div>
+          <div class="member-meta">
+            <span [ngClass]="getStatusClass(member.status)">{{ member.status | titlecase }}</span>
+            <span [ngClass]="getMfaClass(member.mfa)">{{ member.mfa }}</span>
+            <span [ngClass]="getRiskClass(member.risk)">{{ member.risk | titlecase }} risk</span>
+          </div>
+          <div class="member-last">Last active: {{ member.lastActive }}</div>
+        </li>
+      </ul>
+    </div>
+    <div class="invites-board">
+      <header class="section-head">
+        <div>
+          <h2>Invite queue</h2>
+          <p>Monitor pending invitations and catch access expiring soon.</p>
+        </div>
+        <button class="primary">Send new invite</button>
+      </header>
+      <ul class="invite-list">
+        <li *ngFor="let invite of inviteQueue">
+          <div class="invite-info">
+            <h3>{{ invite.email }}</h3>
+            <span class="invite-role">{{ invite.role }}</span>
+          </div>
+          <div class="invite-meta">
+            <span class="invite-sent">Sent {{ invite.sent }}</span>
+            <span class="invite-status">{{ invite.status }}</span>
+          </div>
+          <div class="invite-actions">
+            <button class="ghost">Resend</button>
+            <button class="ghost destructive">Revoke</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="activity-log">
+    <header class="section-head">
+      <div>
+        <h2>Access activity feed</h2>
+        <p>Capture the moments that change permissions so audits stay effortless.</p>
+      </div>
+      <button class="ghost">View full history</button>
+    </header>
+    <ul class="activity-list">
+      <li *ngFor="let event of activityFeed">
+        <div class="activity-time">{{ event.time }}</div>
+        <div class="activity-body">
+          <p>
+            <strong>{{ event.actor }}</strong>
+            {{ event.action }}
+            <strong>{{ event.target }}</strong>
+          </p>
+          <span class="activity-detail">{{ event.detail }}</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+</div>

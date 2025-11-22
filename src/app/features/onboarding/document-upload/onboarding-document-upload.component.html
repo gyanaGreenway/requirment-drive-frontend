@@ -1,0 +1,104 @@
+<section class="doc-upload">
+  <header class="doc-upload__header">
+    <div>
+      <h1>Onboarding Document Hub</h1>
+      <p>{{ visionStatement }}</p>
+    </div>
+    <div class="doc-upload__actions">
+      <button type="button" class="btn btn-ghost">Launch bulk request</button>
+      <button type="button" class="btn btn-primary">Upload document</button>
+    </div>
+  </header>
+
+  <section class="doc-upload__summary">
+    <article class="summary-card">
+      <h2>{{ openRequests }}</h2>
+      <p>Open requests</p>
+      <span>{{ awaitingUploads }} awaiting candidate action</span>
+    </article>
+    <article class="summary-card">
+      <h2>{{ flaggedItems }}</h2>
+      <p>Requires follow-up</p>
+      <span>Escalate to reviewer today</span>
+    </article>
+    <article class="summary-card">
+      <h2>{{ acceptedThisWeek }}</h2>
+      <p>Accepted this week</p>
+      <span>Celebrate zero-paper onboarding</span>
+    </article>
+  </section>
+
+  <div class="doc-upload__filters">
+    <div class="chip-group">
+      <button
+        type="button"
+        class="chip"
+        *ngFor="let filter of filters"
+        [class.chip--active]="selectedFilter === filter.id"
+        (click)="setFilter(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+    <button type="button" class="btn btn-outline">Download audit log</button>
+  </div>
+
+  <section class="doc-upload__list" *ngIf="filteredUploads.length; else emptyState">
+    <article class="document-card" *ngFor="let upload of filteredUploads">
+      <header class="document-card__header">
+        <div>
+          <h3>{{ upload.candidate }}</h3>
+          <p>{{ upload.role }}</p>
+        </div>
+        <span [ngClass]="getStatusBadge(upload.status)">{{ upload.status }}</span>
+      </header>
+
+      <div class="document-card__meta">
+        <div>
+          <span class="label">Document</span>
+          <strong>{{ upload.document }}</strong>
+        </div>
+        <div>
+          <span class="label">Track</span>
+          <strong>{{ upload.track }}</strong>
+        </div>
+        <div>
+          <span class="label">Reviewer</span>
+          <strong>{{ upload.reviewer || 'Not assigned' }}</strong>
+        </div>
+        <div>
+          <span class="label">Requirement</span>
+          <span class="pill">{{ isRequiredLabel(upload) }}</span>
+        </div>
+        <div>
+          <span class="label">Timeline</span>
+          <span [ngClass]="getDueClass(upload)">{{ getDueLabel(upload) }}</span>
+        </div>
+      </div>
+
+      <p class="document-card__notes">{{ upload.notes }}</p>
+
+      <footer class="document-card__footer">
+        <button type="button" class="btn-light">View request</button>
+        <button type="button" class="btn-outline">Send reminder</button>
+        <button type="button" class="btn-link">Upload on behalf</button>
+      </footer>
+    </article>
+  </section>
+
+  <ng-template #emptyState>
+    <section class="doc-upload__empty">
+      <h3>No documents found for this filter</h3>
+      <p>Kick off a request or import a checklist to keep onboarding momentum.</p>
+    </section>
+  </ng-template>
+
+  <section class="doc-upload__roadmap">
+    <h2>Vision next</h2>
+    <ul>
+      <li>Auto-generate welcome packets tied to candidate persona and location.</li>
+      <li>Slack & Teams nudges when documents turn overdue by 24 hours.</li>
+      <li>Version history with e-sign comparison overlays.</li>
+    </ul>
+  </section>
+</section>

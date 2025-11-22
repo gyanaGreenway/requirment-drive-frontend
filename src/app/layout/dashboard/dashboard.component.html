@@ -12,30 +12,48 @@
       <h2 class="logo" *ngIf="!sidebarCollapsed">RecruitmentDrive</h2>
     </div>
     <nav>
-      <ul>
-        <li>
-          <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" [attr.title]="sidebarCollapsed ? 'Dashboard' : null">
-            <span class="icon"><i class="bi bi-speedometer2"></i></span>
-            <span class="text" *ngIf="!sidebarCollapsed">Dashboard</span>
+      <ul class="nav-list">
+        <li *ngFor="let item of navItems"
+            [class.nav-group]="item.children?.length"
+            [class.expanded]="item.children?.length && isExpanded(item)"
+            [class.active]="!item.children?.length && isItemActive(item)"
+            [class.current]="item.children?.length && isItemActive(item)">
+          <a *ngIf="!item.children?.length"
+             [routerLink]="item.route"
+             class="nav-link"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+             [attr.title]="sidebarCollapsed ? item.label : null">
+            <span class="icon"><i class="bi" [ngClass]="item.icon"></i></span>
+            <span class="text" *ngIf="!sidebarCollapsed">{{ item.label }}</span>
           </a>
-        </li>
-        <li>
-          <a routerLink="/dashboard/jobs" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Jobs' : null">
-            <span class="icon"><i class="bi bi-briefcase"></i></span>
-            <span class="text" *ngIf="!sidebarCollapsed">Jobs</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/dashboard/candidates" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Candidates' : null">
-            <span class="icon"><i class="bi bi-people"></i></span>
-            <span class="text" *ngIf="!sidebarCollapsed">Candidates</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/dashboard/applications" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Applications' : null">
-            <span class="icon"><i class="bi bi-file-earmark-text"></i></span>
-            <span class="text" *ngIf="!sidebarCollapsed">Applications</span>
-          </a>
+
+          <button *ngIf="item.children?.length"
+                  type="button"
+                  class="nav-link nav-group-btn"
+                  (click)="toggleSection(item)"
+                  [attr.aria-expanded]="isExpanded(item)"
+                  [attr.title]="sidebarCollapsed ? item.label : null">
+            <span class="icon"><i class="bi" [ngClass]="item.icon"></i></span>
+            <span class="text" *ngIf="!sidebarCollapsed">{{ item.label }}</span>
+            <span class="chevron" *ngIf="!sidebarCollapsed">
+              <i class="bi" [ngClass]="isExpanded(item) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            </span>
+          </button>
+
+          <ul *ngIf="item.children?.length && !sidebarCollapsed" class="nav-submenu" [class.expanded]="isExpanded(item)">
+            <li *ngFor="let child of item.children" [class.active]="isItemActive(child)">
+              <a [routerLink]="child.route"
+                 class="nav-sublink"
+                 routerLinkActive="active"
+                 [routerLinkActiveOptions]="{ exact: child.exact ?? false }"
+                 [class.active]="isItemActive(child)"
+                 [attr.title]="child.label">
+                <span class="submenu-bullet"><i class="bi" [ngClass]="child.icon || 'bi-dot'"></i></span>
+                <span class="submenu-text">{{ child.label }}</span>
+              </a>
+            </li>
+          </ul>
         </li>
       </ul>
     </nav>

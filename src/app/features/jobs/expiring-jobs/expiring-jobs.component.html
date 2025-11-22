@@ -1,0 +1,9 @@
+<section class="section">
+  <h2>Expiring Jobs</h2>
+  <p>Jobs nearing their closing date.</p>
+  <ul class="expiring-list">
+    <li *ngFor="let job of expiringJobs">
+      <strong>{{ job.title }}</strong> — {{ job.daysLeft }} days left
+    </li>
+  </ul>
+</section>

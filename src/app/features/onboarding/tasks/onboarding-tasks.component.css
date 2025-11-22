@@ -1,0 +1,350 @@
+.tasks {
+  padding: 24px;
+  min-height: 100%;
+  background: linear-gradient(180deg, #f9faff 0%, #eef1ff 100%);
+  display: grid;
+  gap: 24px;
+  color: #1f2937;
+  font-size: 0.9rem;
+}
+
+.tasks__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tasks__header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.tasks__header p {
+  margin: 6px 0 0;
+  color: #566176;
+  max-width: 540px;
+}
+
+.tasks__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 9px 18px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: #fff;
+  box-shadow: 0 18px 34px rgba(79, 70, 229, 0.25);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #1d4ed8, #4338ca);
+}
+
+.btn-ghost {
+  background: rgba(99, 102, 241, 0.16);
+  color: #4338ca;
+}
+
+.btn-ghost:hover {
+  background: rgba(99, 102, 241, 0.24);
+}
+
+.btn-outline {
+  border-color: rgba(99, 102, 241, 0.45);
+  color: #312e81;
+  background: #fff;
+}
+
+.btn-outline:hover {
+  border-color: rgba(99, 102, 241, 0.65);
+  color: #1f2937;
+}
+
+.btn-light {
+  background: rgba(96, 165, 250, 0.16);
+  color: #1d4ed8;
+  border: none;
+}
+
+.btn-link {
+  border: none;
+  background: none;
+  color: #4338ca;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.tasks__summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.summary-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 18px 32px rgba(148, 163, 184, 0.26);
+  display: grid;
+  gap: 6px;
+}
+
+.summary-card h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.summary-card p {
+  margin: 0;
+  color: #4a586e;
+  font-size: 0.84rem;
+}
+
+.summary-card span {
+  color: #64748b;
+  font-size: 0.72rem;
+}
+
+.tasks__filters {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 999px;
+  padding: 8px 18px;
+  background: #fff;
+  color: #4338ca;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chip:hover {
+  border-color: rgba(99, 102, 241, 0.55);
+}
+
+.chip--active {
+  background: #4338ca;
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(79, 70, 229, 0.35);
+  border-color: transparent;
+}
+
+.tasks__grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.task-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 24px 40px rgba(15, 23, 42, 0.1);
+  display: grid;
+  gap: 16px;
+}
+
+.task-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.task-card__header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.task-card__header p {
+  margin: 6px 0 0;
+  color: #566076;
+  font-size: 0.8rem;
+}
+
+.status-pill {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.status-pill--not-started {
+  background: rgba(148, 163, 184, 0.28);
+  color: #475569;
+}
+
+.status-pill--in-progress {
+  background: rgba(129, 140, 248, 0.22);
+  color: #4338ca;
+}
+
+.status-pill--scheduled {
+  background: rgba(59, 130, 246, 0.18);
+  color: #1d4ed8;
+}
+
+.status-pill--completed {
+  background: rgba(16, 185, 129, 0.22);
+  color: #047857;
+}
+
+.status-pill--blocked {
+  background: rgba(248, 113, 113, 0.22);
+  color: #b91c1c;
+}
+
+.task-card__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.task-card__meta div {
+  display: grid;
+  gap: 4px;
+}
+
+.label {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.timeline {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.12);
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.timeline--warning {
+  background: rgba(250, 204, 21, 0.2);
+  color: #a16207;
+}
+
+.timeline--overdue {
+  background: rgba(248, 113, 113, 0.28);
+  color: #b91c1c;
+}
+
+.timeline--completed {
+  background: rgba(16, 185, 129, 0.22);
+  color: #047857;
+}
+
+.task-card__progress {
+  display: grid;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: #4a5668;
+}
+
+.progress {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.35);
+  overflow: hidden;
+}
+
+.progress__fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(135deg, #34d399, #10b981);
+}
+
+.task-card__progress strong {
+  font-size: 0.82rem;
+  color: #047857;
+}
+
+.task-card__notes {
+  margin: 0;
+  color: #374151;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  background: rgba(239, 246, 255, 0.7);
+  border-left: 3px solid rgba(99, 102, 241, 0.32);
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+
+.task-card__footer {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tasks__empty {
+  background: #fff;
+  border: 1px dashed rgba(148, 163, 184, 0.5);
+  border-radius: 18px;
+  padding: 28px;
+  text-align: center;
+  color: #475569;
+}
+
+.tasks__roadmap {
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  border: 1px solid rgba(205, 211, 235, 0.6);
+  box-shadow: 0 16px 30px rgba(148, 163, 184, 0.2);
+}
+
+.tasks__roadmap h2 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.tasks__roadmap ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #4a5368;
+  display: grid;
+  gap: 8px;
+  font-size: 0.8rem;
+}

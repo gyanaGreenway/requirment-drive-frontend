@@ -1,183 +1,212 @@
-<div class="container-fluid py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">
-      <i class="bi bi-file-earmark-text me-2"></i>Job Applications
-    </h2>
-    <button class="btn btn-primary" (click)="createApplication()">
-      <i class="bi bi-plus-circle me-2"></i>Create Application
-    </button>
+<div class="container-fluid py-4 applications-layout">
+  <div class="page-header">
+    <div class="title-group">
+      <span class="eyebrow">Hiring Flow</span>
+      <h2 class="mb-1">
+        <i class="bi bi-file-earmark-text me-2"></i>Application Pipeline
+      </h2>
+      <p class="lead text-muted mb-0 small">Keep every candidate checkpoint transparent—from initial submission through final decision.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline-secondary" type="button" (click)="loadApplications()" [disabled]="loading">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+        Refresh
+      </button>
+      <button class="btn btn-primary" type="button" (click)="createApplication()">
+        <i class="bi bi-plus-circle me-2"></i>Create Application
+      </button>
+    </div>
   </div>
 
-  <!-- Filters Card -->
-  <div class="card mb-4">
-    <div class="card-header bg-light">
-      <h5 class="mb-0">
-        <i class="bi bi-funnel me-2"></i>Filters & Sorting
-      </h5>
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <span class="metric-label">Active Applications</span>
+      <span class="metric-value">{{ currentPageCount }}</span>
+      <span class="metric-sub">Visible in the current view</span>
     </div>
+    <div class="metric-card">
+      <span class="metric-label">Pipeline Total</span>
+      <span class="metric-value">{{ totalApplicationsCount }}</span>
+      <span class="metric-sub">Across all pages</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">New This Week</span>
+      <span class="metric-value">{{ newThisWeekCount }}</span>
+      <span class="metric-sub">Submitted in last 7 days</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">Shortlist Rate</span>
+      <span class="metric-value">{{ shortlistRate }}%</span>
+      <span class="metric-sub">Based on current page</span>
+    </div>
+  </div>
+
+  <div class="filters-card card">
     <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label class="form-label">Status</label>
+      <div class="filters-grid">
+        <div class="filter-field">
+          <label>Status</label>
           <select class="form-select" [(ngModel)]="filter.status" (change)="onFilterChange()">
-            <option [ngValue]="undefined">All Statuses</option>
+            <option [ngValue]="undefined">All statuses</option>
             <option *ngFor="let status of statusOptions" [ngValue]="status.value">{{ status.label }}</option>
           </select>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Job</label>
+        <div class="filter-field">
+          <label>Job</label>
           <select class="form-select" [(ngModel)]="filter.jobId" (change)="onFilterChange()">
-            <option [value]="undefined">All Jobs</option>
+            <option [value]="undefined">All jobs</option>
             <option *ngFor="let job of jobs" [value]="job.id">{{ job.title }}</option>
           </select>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Candidate</label>
+        <div class="filter-field">
+          <label>Candidate</label>
           <select class="form-select" [(ngModel)]="filter.candidateId" (change)="onFilterChange()">
-            <option [value]="undefined">All Candidates</option>
-            <option *ngFor="let candidate of candidates" [value]="candidate.id">
-              {{ candidate.firstName }} {{ candidate.lastName }}
-            </option>
+            <option [value]="undefined">All candidates</option>
+            <option *ngFor="let candidate of candidates" [value]="candidate.id">{{ candidate.firstName }} {{ candidate.lastName }}</option>
           </select>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Sort By</label>
+        <div class="filter-field">
+          <label>Sort by</label>
           <select class="form-select" [(ngModel)]="filter.sortBy" (change)="onFilterChange()">
-            <option value="appliedDate">Applied Date</option>
+            <option value="appliedDate">Applied date</option>
             <option value="status">Status</option>
             <option value="jobId">Job</option>
             <option value="candidateId">Candidate</option>
           </select>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Start Date</label>
-          <input 
-            type="date" 
-            class="form-control" 
-            [value]="filter.startDate ? (filter.startDate | date:'yyyy-MM-dd') : ''"
-            (input)="onStartDateChange($any($event.target).value)"
-          />
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">End Date</label>
-          <input 
-            type="date" 
-            class="form-control" 
-            [value]="filter.endDate ? (filter.endDate | date:'yyyy-MM-dd') : ''"
-            (input)="onEndDateChange($any($event.target).value)"
-          />
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Sort Order</label>
+        <div class="filter-field">
+          <label>Sort order</label>
           <select class="form-select" [(ngModel)]="filter.sortOrder" (change)="onFilterChange()">
             <option value="desc">Descending</option>
             <option value="asc">Ascending</option>
           </select>
         </div>
-        <div class="col-md-3 d-flex align-items-end">
-          <button class="btn btn-outline-secondary w-100" (click)="clearFilters()">
-            <i class="bi bi-x-circle me-2"></i>Clear Filters
+        <div class="filter-field">
+          <label>From</label>
+          <input type="date" class="form-control" [value]="filter.startDate ? (filter.startDate | date:'yyyy-MM-dd') : ''" (input)="onStartDateChange($any($event.target).value)" />
+        </div>
+        <div class="filter-field">
+          <label>To</label>
+          <input type="date" class="form-control" [value]="filter.endDate ? (filter.endDate | date:'yyyy-MM-dd') : ''" (input)="onEndDateChange($any($event.target).value)" />
+        </div>
+        <div class="filter-field">
+          <label class="d-block">&nbsp;</label>
+          <button class="btn btn-outline-secondary w-100" type="button" (click)="clearFilters()">
+            <i class="bi bi-x-circle me-2"></i>Clear filters
           </button>
         </div>
+        <div class="filter-meta" *ngIf="lastRefreshed">Refreshed {{ lastRefreshed | date: 'shortTime' }}</div>
       </div>
     </div>
   </div>
 
-  <!-- Error Message -->
   <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
     {{ error }}
     <button type="button" class="btn-close" (click)="error = null"></button>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="text-center py-5">
+  <div *ngIf="loading" class="loading-state">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
+    <p class="text-muted small mt-3 mb-0">Syncing application board…</p>
   </div>
 
-  <!-- Applications Table -->
-  <div *ngIf="!loading && applications.length > 0" class="card">
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th (click)="onSortChange('jobId')" style="cursor: pointer;">
-                Job <i class="bi bi-arrow-down-up"></i>
-              </th>
-              <th (click)="onSortChange('candidateId')" style="cursor: pointer;">
-                Candidate <i class="bi bi-arrow-down-up"></i>
-              </th>
-              <th (click)="onSortChange('status')" style="cursor: pointer;">
-                Status <i class="bi bi-arrow-down-up"></i>
-              </th>
-              <th (click)="onSortChange('appliedDate')" style="cursor: pointer;">
-                Applied Date <i class="bi bi-arrow-down-up"></i>
-              </th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let application of applications">
-              <td>
-                <strong>{{ application.job?.title || getJobName(application.jobId) }}</strong>
-                <br>
-                <small class="text-muted">{{ application.job?.department }} - {{ application.job?.location }}</small>
-              </td>
-              <td>
+  <div *ngIf="!loading && currentPageCount > 0" class="board-layout" [class.board-single]="!recentApplications.length">
+    <div class="pipeline-board">
+      <div class="pipeline-column" *ngFor="let column of pipelineColumns; trackBy: trackByColumn">
+        <div class="column-header">
+          <span class="column-title">{{ column.label }}</span>
+          <span class="column-count badge bg-light text-muted">{{ column.items.length }}</span>
+        </div>
+        <div class="column-body">
+          <div class="application-card" *ngFor="let application of column.items; trackBy: trackByApplication">
+            <div class="applicant">
+              <div class="avatar" [ngClass]="column.accent">{{ getCandidateInitials(application) }}</div>
+              <div class="applicant-meta">
+                <div class="name">
+                  {{ application.candidate ? (application.candidate.firstName + ' ' + application.candidate.lastName) : getCandidateName(application.candidateId) }}
+                </div>
+                <div class="job-meta">
+                  <span>{{ application.job?.title || getJobName(application.jobId) }}</span>
+                  <span *ngIf="application.job?.location">{{ application.job?.location }}</span>
+                </div>
+              </div>
+              <button class="btn btn-outline-primary btn-sm" type="button" (click)="viewApplication(application.id)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="application-meta">
+              <span class="status-pill" [ngClass]="column.accent">{{ getStatusLabel(application.status) }}</span>
+              <span class="date-meta">
+                Applied {{ application.appliedDate | date: 'MMM d, y' }}
+                <span *ngIf="getDaysSinceApplied(application) as days">· {{ days }} days ago</span>
+              </span>
+            </div>
+          </div>
+          <p *ngIf="!column.items.length" class="column-empty text-muted small mb-0">No applications in this stage.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="recent-activity card" *ngIf="recentApplications.length">
+      <div class="card-header">
+        <h6 class="mb-0">Recent activity</h6>
+      </div>
+      <div class="card-body">
+        <ul class="timeline list-unstyled mb-0">
+          <li *ngFor="let application of recentApplications; trackBy: trackByApplication">
+            <div class="timeline-dot" [ngClass]="getStatusClass(application.status)"></div>
+            <div class="timeline-content">
+              <div class="timeline-title">
                 {{ application.candidate ? (application.candidate.firstName + ' ' + application.candidate.lastName) : getCandidateName(application.candidateId) }}
-                <br>
-                <small class="text-muted">{{ application.candidate?.email }}</small>
-              </td>
-              <td>
-                <span [ngClass]="getStatusClass(application.status)">
-                  {{ getStatusLabel(application.status) }}
-                </span>
-              </td>
-              <td>{{ application.appliedDate | date:'short' }}</td>
-              <td>
-                <button class="btn btn-sm btn-primary" (click)="viewApplication(application.id)" title="View/Update Status">
-                  <i class="bi bi-eye me-1"></i>View
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <span class="text-muted">applied to {{ application.job?.title || getJobName(application.jobId) }}</span>
+              </div>
+              <div class="timeline-meta">
+                {{ application.appliedDate | date: 'MMM d, y, h:mm a' }} · {{ getStatusLabel(application.status) }}
+              </div>
+            </div>
+          </li>
+        </ul>
       </div>
     </div>
   </div>
 
-  <!-- Empty State -->
-  <div *ngIf="!loading && applications.length === 0" class="card">
+  <div *ngIf="!loading && currentPageCount === 0" class="empty-state card">
     <div class="card-body text-center py-5">
-      <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
-      <p class="mt-3 text-muted">No applications found.</p>
+      <i class="bi bi-inbox" aria-hidden="true"></i>
+      <h5 class="mt-3">No applications match your filters</h5>
+      <p class="text-muted small mb-4">Adjust the filters or create a new application to keep the pipeline moving.</p>
+      <div class="d-flex justify-content-center gap-2">
+        <button class="btn btn-outline-secondary" type="button" (click)="clearFilters()">Reset filters</button>
+        <button class="btn btn-primary" type="button" (click)="createApplication()">
+          <i class="bi bi-plus-circle me-2"></i>Create Application
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Pagination -->
-  <div *ngIf="pagedResult && pagedResult.totalPages > 1" class="mt-4">
+  <div *ngIf="pagedResult && pagedResult.totalPages > 1" class="pagination-wrapper">
     <nav>
       <ul class="pagination justify-content-center">
         <li class="page-item" [class.disabled]="!pagedResult.hasPreviousPage">
-          <a class="page-link" (click)="onPageChange((filter.pageNumber || 1) - 1)" [class.disabled]="!pagedResult.hasPreviousPage">
+          <button class="page-link" type="button" (click)="onPageChange((filter.pageNumber || 1) - 1)" [disabled]="!pagedResult.hasPreviousPage">
             Previous
-          </a>
+          </button>
         </li>
         <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === (filter.pageNumber || 1)">
-          <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+          <button class="page-link" type="button" (click)="onPageChange(page)">{{ page }}</button>
         </li>
         <li class="page-item" [class.disabled]="!pagedResult.hasNextPage">
-          <a class="page-link" (click)="onPageChange((filter.pageNumber || 1) + 1)" [class.disabled]="!pagedResult.hasNextPage">
+          <button class="page-link" type="button" (click)="onPageChange((filter.pageNumber || 1) + 1)" [disabled]="!pagedResult.hasNextPage">
             Next
-          </a>
+          </button>
         </li>
       </ul>
     </nav>
-    <p class="text-center text-muted mt-2">
-      Showing {{ ((filter.pageNumber || 1) - 1) * (filter.pageSize || 10) + 1 }} to 
-      {{ (filter.pageNumber || 1) * (filter.pageSize || 10) > (pagedResult.totalCount) ? pagedResult.totalCount : (filter.pageNumber || 1) * (filter.pageSize || 10) }} 
+    <p class="text-center text-muted small mt-2 mb-0">
+      Showing {{ ((filter.pageNumber || 1) - 1) * (filter.pageSize || 10) + 1 }} to
+      {{ (filter.pageNumber || 1) * (filter.pageSize || 10) > pagedResult.totalCount ? pagedResult.totalCount : (filter.pageNumber || 1) * (filter.pageSize || 10) }}
       of {{ pagedResult.totalCount }} applications
     </p>
   </div>

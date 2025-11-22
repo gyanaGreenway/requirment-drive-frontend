@@ -1,0 +1,14 @@
+<section class="section">
+  <h2>Job Performance Report</h2>
+  <table class="table">
+    <thead><tr><th>Job</th><th>Views</th><th>Applications</th><th>Conversion %</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let j of topJobs">
+        <td>{{ j.title }}</td>
+        <td>{{ j.views }}</td>
+        <td>{{ j.applications }}</td>
+        <td>{{ j.conversion }}</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

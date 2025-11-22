@@ -1,0 +1,12 @@
+<section class="section">
+  <h2>Email Templates</h2>
+  <table class="table">
+    <thead><tr><th>Name</th><th>Last Updated</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let t of templates">
+        <td>{{ t.name }}</td>
+        <td>{{ t.updated }}</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

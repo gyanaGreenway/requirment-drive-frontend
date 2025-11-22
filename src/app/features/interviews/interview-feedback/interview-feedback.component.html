@@ -1,0 +1,115 @@
+<section class="feedback">
+  <header class="feedback__header">
+    <div>
+      <h2>Interview Feedback</h2>
+      <p>Track panel signals, align on next steps, and keep candidates moving smoothly.</p>
+    </div>
+    <div class="feedback__actions">
+      <button type="button" class="btn btn-ghost">Request panel sync</button>
+      <button type="button" class="btn btn-primary">Export feedback</button>
+    </div>
+  </header>
+
+  <div class="feedback__filters">
+    <button
+      type="button"
+      *ngFor="let filter of filters"
+      class="chip"
+      [class.chip--active]="selectedFilter === filter.id"
+      (click)="setFilter(filter.id)"
+    >
+      {{ filter.label }}
+    </button>
+  </div>
+
+  <section class="feedback__summary">
+    <article class="summary-card">
+      <p class="summary-card__label">Average score</p>
+      <h3>{{ averageScore }}</h3>
+      <span class="summary-card__hint">Across submitted rounds</span>
+    </article>
+    <article class="summary-card">
+      <p class="summary-card__label">Ready for offer</p>
+      <h3>{{ offerReadyCount }}</h3>
+      <span class="summary-card__hint">Final approvals pending</span>
+    </article>
+    <article class="summary-card">
+      <p class="summary-card__label">Pending decisions</p>
+      <h3>{{ pendingCount }}</h3>
+      <span class="summary-card__hint">Need quick verdict</span>
+    </article>
+    <article class="summary-card">
+      <p class="summary-card__label">Needs alignment</p>
+      <h3>{{ alignmentNeededCount }}</h3>
+      <span class="summary-card__hint">Schedule sync with panel</span>
+    </article>
+  </section>
+
+  <section class="feedback__list" *ngIf="filteredFeedback.length; else emptyState">
+    <article class="feedback-card" *ngFor="let entry of filteredFeedback">
+      <header class="feedback-card__header">
+        <div>
+          <h3>{{ entry.candidate }}</h3>
+          <p>{{ entry.role }} · {{ entry.stage }}</p>
+        </div>
+        <div [ngClass]="['feedback-card__score', 'feedback-card__score--' + getScoreBadge(entry.score)]">
+          <span>{{ entry.score | number: '1.1-1' }}</span>
+          <small>/5</small>
+        </div>
+      </header>
+
+      <div class="feedback-card__meta">
+        <span>Interviewed by {{ entry.interviewer }}</span>
+        <span>{{ entry.submittedOn | date: 'EEE, MMM d • shortTime' }}</span>
+        <span>Status: {{ entry.status }}</span>
+      </div>
+
+      <section class="feedback-card__content">
+        <div class="feedback-card__verdict">
+          <span class="feedback-card__emoji">{{ getVerdictEmoji(entry.verdict) }}</span>
+          <div>
+            <h4>{{ entry.verdict }}</h4>
+            <p>{{ entry.notes }}</p>
+          </div>
+        </div>
+
+        <div class="feedback-card__highlights">
+          <div>
+            <h5>Strength signals</h5>
+            <ul>
+              <li *ngFor="let strength of entry.strengths">{{ strength }}</li>
+            </ul>
+          </div>
+          <div>
+            <h5>Watch-outs</h5>
+            <ul>
+              <li *ngFor="let reservation of entry.reservations">{{ reservation }}</li>
+              <li *ngIf="!entry.reservations.length">None flagged</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <footer class="feedback-card__footer">
+        <p><strong>Next action:</strong> {{ entry.nextActions }}</p>
+        <button type="button" class="btn-link">Log decision</button>
+      </footer>
+    </article>
+  </section>
+
+  <ng-template #emptyState>
+    <section class="feedback__empty">
+      <h3>No feedback under this filter</h3>
+      <p>Change the view or nudge interviewers for pending submissions.</p>
+    </section>
+  </ng-template>
+
+  <section class="feedback__roadmap">
+    <h3>Upcoming enhancements</h3>
+    <ul>
+      <li>Auto-share feedback digest with hiring managers every Friday.</li>
+      <li>Sentiment analysis across comments to spot red flags sooner.</li>
+      <li>Panel calibration heat-map to highlight scoring deviations.</li>
+    </ul>
+  </section>
+</section>

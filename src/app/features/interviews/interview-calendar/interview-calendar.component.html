@@ -1,0 +1,117 @@
+<section class="calendar">
+  <header class="calendar__header">
+    <div>
+      <h2>Interview Calendar</h2>
+      <p>Stay ahead of every conversation and keep candidates informed.</p>
+    </div>
+    <div class="calendar__primary-actions">
+      <button type="button" class="btn btn-primary">
+        <span aria-hidden="true">＋</span>
+        Schedule interview
+      </button>
+      <button type="button" class="btn btn-ghost">Export agenda</button>
+    </div>
+  </header>
+
+  <div class="calendar__filters">
+    <button
+      type="button"
+      class="filter-chip"
+      *ngFor="let option of filterOptions"
+      [class.filter-chip--active]="selectedTimeframe === option.id"
+      (click)="setTimeframe(option.id)"
+    >
+      {{ option.label }}
+    </button>
+  </div>
+
+  <section class="calendar__summary">
+    <article class="summary-card">
+      <h3>{{ totalUpcoming }}</h3>
+      <p>Upcoming interviews</p>
+    </article>
+    <article class="summary-card">
+      <h3>{{ scheduledToday }}</h3>
+      <p>Happening today</p>
+    </article>
+    <article class="summary-card">
+      <h3>{{ awaitingFeedback }}</h3>
+      <p>Awaiting feedback</p>
+    </article>
+  </section>
+
+  <section class="calendar__next" *ngIf="nextInterview as interview">
+    <div class="calendar__next-header">
+      <h3>Next interview</h3>
+      <span class="calendar__next-time">{{ interview.dateTime | date: 'EEE, MMM d • shortTime' }}</span>
+    </div>
+    <div class="next-card">
+      <div class="next-card__body">
+        <h4>{{ interview.candidate }}</h4>
+        <p>{{ interview.role }} · {{ interview.stage }} with {{ interview.interviewer }}</p>
+        <p class="next-card__location">{{ interview.location }}</p>
+      </div>
+      <div class="next-card__actions">
+        <a *ngIf="interview.meetingLink" [href]="interview.meetingLink" target="_blank" rel="noopener" class="btn-link">Join call</a>
+        <span class="badge badge--type">{{ interview.type }}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="calendar__list" *ngIf="groupedInterviews.length; else emptyState">
+    <div class="calendar__day" *ngFor="let group of groupedInterviews">
+      <h3>{{ group.date | date: 'fullDate' }}</h3>
+      <article class="calendar__event" *ngFor="let interview of group.items; let last = last">
+        <div class="calendar__event-indicator" [class.calendar__event-indicator--last]="last">
+          <span class="calendar__event-dot" aria-hidden="true"></span>
+          <span class="calendar__event-line" aria-hidden="true"></span>
+        </div>
+        <div class="calendar__event-timing">
+          <span class="calendar__event-clock">{{ interview.dateTime | date: 'shortTime' }}</span>
+          <span class="calendar__event-duration">{{ interview.duration }}</span>
+        </div>
+        <div class="calendar__event-content">
+          <header>
+            <h4>{{ interview.candidate }}</h4>
+            <small>{{ interview.role }}</small>
+          </header>
+          <p class="calendar__event-meta">
+            <span>{{ interview.stage }}</span>
+            <span>with {{ interview.interviewer }}</span>
+            <span>{{ interview.location }}</span>
+          </p>
+          <p class="calendar__event-notes" *ngIf="interview.notes">{{ interview.notes }}</p>
+          <a
+            *ngIf="interview.meetingLink"
+            [href]="interview.meetingLink"
+            target="_blank"
+            rel="noopener"
+            class="calendar__event-link"
+          >
+            Join virtual room
+          </a>
+        </div>
+        <div class="calendar__event-actions">
+          <span class="badge badge--type">{{ interview.type }}</span>
+          <span class="badge badge--stage">{{ interview.stage }}</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <ng-template #emptyState>
+    <div class="calendar__empty">
+      <h3>No interviews in this time range</h3>
+      <p>Switch filters or schedule a new interview to populate the agenda.</p>
+    </div>
+  </ng-template>
+
+  <section class="calendar__roadmap">
+    <h3>Future enhancements we are lining up</h3>
+    <ul>
+      <li>Calendar sync with Outlook and Google to avoid availability clashes.</li>
+      <li>Automated reminder emails and prep packs for interviewers.</li>
+      <li>Candidate self-serve slots powered by interviewer availability.</li>
+    </ul>
+  </section>
+</section>

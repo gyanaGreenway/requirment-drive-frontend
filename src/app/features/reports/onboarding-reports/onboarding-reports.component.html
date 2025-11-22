@@ -1,0 +1,157 @@
+<div class="onboarding-view">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Onboarding intelligence</p>
+      <h1>Accelerate new hire productivity</h1>
+      <p>
+        Track onboarding velocity, sentiment and enablement impact across every cohort. Focus the
+        next sprint on the moments that unlock confidence by day thirty.
+      </p>
+      <div class="chip-group">
+        <button
+          class="chip"
+          *ngFor="let timeframe of timeframes"
+          [class.active]="selectedTimeframe === timeframe"
+          (click)="setTimeframe(timeframe)"
+        >
+          {{ timeframe }}
+        </button>
+      </div>
+    </div>
+    <div class="hero-scorecard">
+      <article class="score-card">
+        <span class="score-label">Launch readiness</span>
+        <strong>94%</strong>
+        <p>New hires completing day-zero essentials before first shift.</p>
+      </article>
+      <article class="score-card">
+        <span class="score-label">Confidence pulse</span>
+        <strong>4.5 / 5</strong>
+        <p>Week-two confidence rating with 63% response rate.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="kpi-grid">
+    <article class="kpi-card" *ngFor="let card of kpis">
+      <header>
+        <span class="kpi-label">{{ card.label }}</span>
+        <span [ngClass]="getTrendClass(card.direction)">{{ card.change }}</span>
+      </header>
+      <strong>{{ card.value }}</strong>
+    </article>
+  </section>
+
+  <section class="stage-progress">
+    <header class="section-head">
+      <div>
+        <h2>Journey stage performance</h2>
+        <p>Completion, sentiment and blocker insights across milestone checkpoints.</p>
+      </div>
+      <span class="mini-pill">Auto-updated every 4 hours</span>
+    </header>
+    <div class="stage-list">
+      <article class="stage-card" *ngFor="let stage of journeyStages">
+        <div class="stage-header">
+          <h3>{{ stage.stage }}</h3>
+          <span [ngClass]="getSentimentClass(stage.sentiment)">{{ stage.sentiment | titlecase }}</span>
+        </div>
+        <div class="progress-line">
+          <div class="progress-bar" [ngStyle]="getStageBarStyle(stage.completion)"></div>
+        </div>
+        <div class="stage-meta">
+          <span class="completion">{{ stage.completion }}% completion</span>
+          <span class="blockers">{{ stage.blockers }} blockers</span>
+          <span [ngClass]="getTrendClass(stage.trend)">{{ stage.change }}</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cohort-section">
+    <header class="section-head">
+      <div>
+        <h2>Cohort acceleration board</h2>
+        <p>Compare completion, ramp time and mentorship outcomes for active cohorts.</p>
+      </div>
+      <button class="ghost">Export cohort insights</button>
+    </header>
+    <div class="cohort-grid">
+      <article class="cohort-card" *ngFor="let cohort of cohortHighlights">
+        <header>
+          <h3>{{ cohort.cohort }}</h3>
+          <span [ngClass]="getTrendClass(cohort.trend)">{{ cohort.change }}</span>
+        </header>
+        <div class="cohort-stats">
+          <div>
+            <span class="stat-label">Completion</span>
+            <strong>{{ cohort.completion }}%</strong>
+          </div>
+          <div>
+            <span class="stat-label">Ramp time</span>
+            <strong>{{ cohort.rampDays }} days</strong>
+          </div>
+          <div>
+            <span class="stat-label">Satisfaction</span>
+            <strong>{{ cohort.satisfaction }} / 5</strong>
+          </div>
+        </div>
+        <p>{{ cohort.mentors }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="sentiment-section">
+    <header class="section-head">
+      <div>
+        <h2>Sentiment and enablement signals</h2>
+        <p>Pulse survey narratives paired with the playbooks that moved the needle.</p>
+      </div>
+    </header>
+    <div class="sentiment-grid">
+      <article class="sentiment-card" *ngFor="let signal of sentimentSignals">
+        <header>
+          <h3>{{ signal.metric }}</h3>
+          <span [ngClass]="getTrendClass(signal.direction)">{{ signal.change }}</span>
+        </header>
+        <strong>{{ signal.score }}</strong>
+        <p>{{ signal.narrative }}</p>
+      </article>
+    </div>
+    <div class="playbook-grid">
+      <article class="playbook-card" *ngFor="let playbook of playbooks">
+        <header>
+          <h3>{{ playbook.title }}</h3>
+          <span class="impact">Impact: {{ playbook.impact }}</span>
+        </header>
+        <p>{{ playbook.description }}</p>
+        <span class="owner">Owner: {{ playbook.owner }}</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="risk-board">
+    <header class="section-head">
+      <div>
+        <h2>Escalations and risk log</h2>
+        <p>Resolve blockers before day 14 to keep new hires on the productivity glidepath.</p>
+      </div>
+      <button class="primary">Create follow-up</button>
+    </header>
+    <ul>
+      <li *ngFor="let alert of riskAlerts">
+        <div class="risk-primary">
+          <span class="risk-id">{{ alert.id }}</span>
+          <h3>{{ alert.title }}</h3>
+          <p>{{ alert.detail }}</p>
+        </div>
+        <div class="risk-meta">
+          <span [ngClass]="getSeverityClass(alert.severity)">{{ alert.severity | titlecase }} impact</span>
+          <span [ngClass]="getStatusClass(alert.status)">{{ alert.status }}</span>
+          <span class="owner">Owner: {{ alert.owner }}</span>
+          <span class="eta">{{ alert.eta }}</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+</div>

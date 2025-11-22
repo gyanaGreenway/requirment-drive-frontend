@@ -1,0 +1,86 @@
+<section class="templates">
+  <header class="templates__header">
+    <div>
+      <h1>Template Library</h1>
+      <p>Purpose-built HR templates with structured narratives, legal alignment, and ready-to-send formats.</p>
+    </div>
+    <div class="templates__actions">
+      <button type="button" class="btn btn-ghost">Share collection</button>
+      <button type="button" class="btn btn-primary">Create template</button>
+    </div>
+  </header>
+
+  <section class="templates__summary">
+    <article class="summary-card">
+      <h2>{{ templates.length }}</h2>
+      <p>Templates catalogued</p>
+      <span>Avg usage {{ averageUsage }} times / quarter</span>
+    </article>
+    <article class="summary-card">
+      <h2>{{ activeTemplates }}</h2>
+      <p>Active and share-ready</p>
+      <span>{{ inReviewTemplates }} pending review</span>
+    </article>
+  </section>
+
+  <div class="templates__filters">
+    <div class="chip-group">
+      <button
+        type="button"
+        class="chip"
+        *ngFor="let filter of filters"
+        [class.chip--active]="selectedFilter === filter.id"
+        (click)="setFilter(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+    <button type="button" class="btn btn-outline">Upload legacy pack</button>
+  </div>
+
+  <section class="template-grid" *ngIf="filteredTemplates.length; else emptyTemplates">
+    <article class="template-card" *ngFor="let template of filteredTemplates">
+      <header>
+        <div>
+          <h2>{{ template.name }}</h2>
+          <p>{{ template.category }} · {{ template.owner }}</p>
+        </div>
+        <span class="status" [ngClass]="template.status.replace(' ', '-').toLowerCase()">{{ template.status }}</span>
+      </header>
+
+      <p class="template-card__description">{{ template.description }}</p>
+
+      <dl class="meta">
+        <div>
+          <dt>Format</dt>
+          <dd>{{ template.format }}</dd>
+        </div>
+        <div>
+          <dt>Last updated</dt>
+          <dd>{{ template.lastUpdated | date: 'MMM d, y' }}</dd>
+        </div>
+        <div>
+          <dt>Usage (QTD)</dt>
+          <dd>{{ template.usageCount }}</dd>
+        </div>
+      </dl>
+
+      <div class="tags">
+        <span class="tag" *ngFor="let tag of template.tags">{{ tag }}</span>
+      </div>
+
+      <footer>
+        <button type="button" class="btn-light">Preview deck</button>
+        <button type="button" class="btn-outline">Download</button>
+        <button type="button" class="btn-link">Suggest edit</button>
+      </footer>
+    </article>
+  </section>
+
+  <ng-template #emptyTemplates>
+    <section class="templates__empty">
+      <h3>No templates in this view</h3>
+      <p>Add your first document or import an existing toolkit bundle.</p>
+    </section>
+  </ng-template>
+</section>

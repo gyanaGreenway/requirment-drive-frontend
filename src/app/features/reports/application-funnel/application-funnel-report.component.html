@@ -1,0 +1,91 @@
+<section class="funnel-view">
+  <header class="hero">
+    <div class="hero-copy">
+      <h1>Application Funnel</h1>
+      <p>{{ narrative }}</p>
+      <div class="hero-meta">
+        <span>Range:</span>
+        <div class="hero-filters">
+          <button
+            type="button"
+            class="filter-pill"
+            *ngFor="let filter of rangeFilters"
+            [class.active]="selectedRange === filter.id"
+            (click)="setRange(filter.id)"
+          >
+            {{ filter.label }}
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <div class="action-card">
+        <h2>Funnel command centre</h2>
+        <p>Download detailed CSVs, cross-check talent marketing ROI, and share board-ready summaries.</p>
+        <div class="actions">
+          <button type="button">Download CSV</button>
+          <button type="button" class="ghost">Email stakeholders</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="metric-deck">
+    <article class="metric-card" *ngFor="let metric of metrics">
+      <header>
+        <span class="metric-label">{{ metric.label }}</span>
+        <span class="metric-delta" [ngClass]="getTrendClass(metric.trend)">{{ metric.delta }}</span>
+      </header>
+      <strong>{{ metric.value }}</strong>
+    </article>
+  </section>
+
+  <section class="persona-bar">
+    <span class="persona-heading">Pipeline focus</span>
+    <div class="persona-filters">
+      <button
+        type="button"
+        class="filter-pill"
+        *ngFor="let persona of personaFilters"
+        [class.active]="selectedPersona === persona.id"
+        (click)="setPersona(persona.id)"
+      >
+        {{ persona.label }}
+      </button>
+    </div>
+    <span class="persona-selected">Viewing {{ selectedRange }}-day trends for {{ selectedPersona | titlecase }}</span>
+  </section>
+
+  <section class="funnel-board">
+    <article class="funnel-stage" *ngFor="let stage of stages; let i = index">
+      <div class="stage-bar" [style.width]="getStageWidth(stage)">
+        <div class="stage-header">
+          <span class="stage-name">{{ stage.stage }}</span>
+          <span class="stage-count">{{ stage.count }}</span>
+        </div>
+        <div class="stage-sub">
+          <span>{{ stage.conversion }}% conversion</span>
+          <span>{{ getAvgDaysLabel(stage) }}</span>
+        </div>
+      </div>
+      <div class="stage-meta">
+        <span class="drop-rate">{{ getDropRate(i) }}</span>
+        <span class="ownership">{{ getFocusBadge(stage) }}</span>
+      </div>
+      <ul class="stage-focus">
+        <li *ngFor="let item of stage.focusAreas">{{ item }}</li>
+      </ul>
+    </article>
+  </section>
+
+  <section class="spotlights">
+    <article class="spotlight" *ngFor="let spotlight of spotlights">
+      <header>
+        <h3>{{ spotlight.title }}</h3>
+        <span class="owner">{{ spotlight.owner }}</span>
+      </header>
+      <p>{{ spotlight.description }}</p>
+      <footer>{{ spotlight.eta }}</footer>
+    </article>
+  </section>
+</section>

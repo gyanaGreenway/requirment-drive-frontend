@@ -1,0 +1,123 @@
+<section class="departments-view">
+  <header class="hero">
+    <div class="hero-copy">
+      <h1>Departments</h1>
+      <p>{{ vision }}</p>
+      <div class="hero-actions">
+        <button type="button">Download staffing plan</button>
+        <button type="button" class="ghost">Share with exec team</button>
+      </div>
+    </div>
+    <div class="hero-side">
+      <article class="summary-card">
+        <h2>Operational pulse</h2>
+        <ul>
+          <li><span>Quarterly reviews</span><strong>Next window: Dec 8-12</strong></li>
+          <li><span>Budget guardrail</span><strong>Keep &lt; 92% utilisation</strong></li>
+          <li><span>Headcount flex</span><strong>6 backfills approved</strong></li>
+        </ul>
+      </article>
+    </div>
+  </header>
+
+  <section class="metric-deck">
+    <article class="metric-card" *ngFor="let metric of metrics">
+      <header>
+        <span class="metric-label">{{ metric.label }}</span>
+        <span class="metric-delta" [ngClass]="'metric-delta--' + metric.trend">{{ metric.delta }}</span>
+      </header>
+      <strong>{{ metric.value }}</strong>
+    </article>
+  </section>
+
+  <section class="filters">
+    <div class="filter-group">
+      <span class="filter-heading">Org pillar</span>
+      <button
+        type="button"
+        class="filter-button"
+        *ngFor="let filter of pillarFilters"
+        [class.active]="selectedPillar === filter.id"
+        (click)="setPillar(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-heading">Hiring focus</span>
+      <button
+        type="button"
+        class="filter-button"
+        *ngFor="let filter of hiringFilters"
+        [class.active]="selectedHiring === filter.id"
+        (click)="setHiring(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+  </section>
+
+  <section class="department-grid">
+    <article class="department-card" *ngFor="let department of filteredDepartments; trackBy: trackByDepartment">
+      <header class="department-header">
+        <div>
+          <h2>{{ department.name }}</h2>
+          <p class="leader">Led by {{ department.head }} · {{ department.location }}</p>
+        </div>
+        <span [ngClass]="getHealthBadge(department.health)">{{ department.health }}</span>
+      </header>
+
+      <div class="stat-grid">
+        <div class="stat">
+          <span class="stat-label">Headcount</span>
+          <strong>{{ department.headcount }}</strong>
+          <p>{{ department.openRoles }} open roles</p>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Engagement</span>
+          <strong>{{ department.engagementScore }}%</strong>
+          <p>Pulse tracked monthly</p>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Budget</span>
+          <strong>{{ department.budgetUtilization }}%</strong>
+          <p>{{ getBudgetLabel(department.budgetUtilization) }}</p>
+        </div>
+        <div class="stat">
+          <span class="stat-label">OKR progress</span>
+          <div class="progress">
+            <div class="progress-bar" [style.width]="getProgressWidth(department.okrProgress)"></div>
+          </div>
+          <p>{{ getProgressWidth(department.okrProgress) }} committed</p>
+        </div>
+      </div>
+
+      <div class="focus-section">
+        <span class="stat-label">Strategic focus</span>
+        <ul>
+          <li *ngFor="let focus of department.strategicFocus">{{ focus }}</li>
+        </ul>
+      </div>
+
+      <div class="focus-section">
+        <span class="stat-label">Active initiatives</span>
+        <div class="initiative-chips">
+          <span *ngFor="let initiative of department.keyInitiatives">{{ initiative }}</span>
+        </div>
+      </div>
+
+      <footer class="department-footer">
+        <span>{{ department.hiringVelocity }}</span>
+        <button type="button" class="ghost">Open operating plan</button>
+      </footer>
+    </article>
+  </section>
+
+  <section class="empty-state" *ngIf="!filteredDepartments.length">
+    <div class="empty-card">
+      <h3>No departments match this view</h3>
+      <p>Adjust the filters to review other pillars or hiring states.</p>
+      <button type="button" (click)="setPillar('all'); setHiring('all')">Reset filters</button>
+    </div>
+  </section>
+</section>

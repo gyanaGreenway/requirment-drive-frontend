@@ -1,0 +1,190 @@
+<div class="hiring-view">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Hiring performance</p>
+      <h1>Expose funnel health and velocity in one glance</h1>
+      <p>
+        Align talent partners, hiring managers and finance with real-time visibility across the
+        funnel. Focus effort where candidates stall, and invest where offers land fastest.
+      </p>
+      <div class="chip-group">
+        <button
+          class="chip"
+          *ngFor="let view of views"
+          [class.active]="selectedView === view"
+          (click)="setView(view)"
+        >
+          {{ view }}
+        </button>
+      </div>
+    </div>
+    <div class="hero-insights">
+      <article class="insight-card">
+        <span class="insight-label">Offers accepted</span>
+        <strong>81%</strong>
+        <p>Up 6 pts after refreshed comp narratives and closing workshops.</p>
+      </article>
+      <article class="insight-card">
+        <span class="insight-label">Critical roles filled</span>
+        <strong>14</strong>
+        <p>Product, data and GTM roles closed this sprint out of 18 committed.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="metric-grid">
+    <article class="metric-card" *ngFor="let metric of velocityMetrics">
+      <header>
+        <span class="metric-label">{{ metric.label }}</span>
+        <span [ngClass]="getTrendClass(metric.direction)">{{ metric.change }}</span>
+      </header>
+      <strong>{{ metric.value }}</strong>
+    </article>
+  </section>
+
+  <section class="pipeline-section">
+    <header class="section-head">
+      <div>
+        <h2>Pipeline momentum</h2>
+        <p>Volume, conversion and week-over-week movement across each stage.</p>
+      </div>
+      <span class="mini-pill">SLA target 48 hours per stage</span>
+    </header>
+    <div class="pipeline-grid">
+      <article class="pipeline-card" *ngFor="let stage of pipelineStages">
+        <header>
+          <h3>{{ stage.stage }}</h3>
+          <span [ngClass]="getTrendClass(stage.direction)">{{ stage.change }}</span>
+        </header>
+        <div class="volume">
+          <span class="volume-label">Volume</span>
+          <strong>{{ stage.volume }}</strong>
+        </div>
+        <div class="conversion">
+          <span class="volume-label">Conversion</span>
+          <div class="conversion-bar">
+            <div class="conversion-fill" [ngStyle]="getBarStyle(stage.conversion)"></div>
+          </div>
+          <span class="conversion-value">{{ stage.conversion }}%</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="sourcing-section">
+    <header class="section-head">
+      <div>
+        <h2>Source quality mix</h2>
+        <p>Track the channels driving hires, share of funnel and quality sentiment.</p>
+      </div>
+      <button class="ghost">Adjust budget allocation</button>
+    </header>
+    <div class="source-grid">
+      <article class="source-card" *ngFor="let channel of sourcingChannels">
+        <header>
+          <h3>{{ channel.channel }}</h3>
+          <span [ngClass]="getTrendClass(channel.direction)">{{ channel.change }}</span>
+        </header>
+        <div class="source-stats">
+          <div>
+            <span class="stat-label">Hires</span>
+            <strong>{{ channel.hires }}</strong>
+          </div>
+          <div>
+            <span class="stat-label">Share</span>
+            <strong>{{ channel.share }}%</strong>
+          </div>
+          <div>
+            <span class="stat-label">Quality</span>
+            <strong>{{ channel.quality }}</strong>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="interview-offer">
+    <div class="interview-load">
+      <header class="section-head">
+        <div>
+          <h2>Interview capacity</h2>
+          <p>Balance interviewer bandwidth to maintain candidate speed.</p>
+        </div>
+      </header>
+      <div class="interview-grid">
+        <article class="interview-card" *ngFor="let load of interviewLoad">
+          <header>
+            <h3>{{ load.team }}</h3>
+            <span class="load-chip">{{ load.load }}</span>
+          </header>
+          <strong>{{ load.interviews }}</strong>
+          <p>{{ load.detail }}</p>
+        </article>
+      </div>
+    </div>
+    <div class="offer-signals">
+      <header class="section-head">
+        <div>
+          <h2>Offer signals</h2>
+          <p>Monitor the final mile of hiring and close gaps before acceptances slip.</p>
+        </div>
+      </header>
+      <div class="signal-grid">
+        <article class="signal-card" *ngFor="let signal of offerSignals">
+          <header>
+            <h3>{{ signal.title }}</h3>
+            <span [ngClass]="getTrendClass(signal.direction)">{{ signal.direction | titlecase }}</span>
+          </header>
+          <strong>{{ signal.value }}</strong>
+          <p>{{ signal.detail }}</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="risk-sprint">
+    <div class="risk-board">
+      <header class="section-head">
+        <div>
+          <h2>Escalations queue</h2>
+          <p>Resolve the blockers slowing current requisitions.</p>
+        </div>
+        <button class="primary">Create mitigation</button>
+      </header>
+      <ul>
+        <li *ngFor="let risk of riskQueue">
+          <div class="risk-primary">
+            <span class="risk-id">{{ risk.id }}</span>
+            <h3>{{ risk.title }}</h3>
+          </div>
+          <div class="risk-meta">
+            <span [ngClass]="getSeverityClass(risk.severity)">{{ risk.severity | titlecase }} impact</span>
+            <span [ngClass]="getStatusClass(risk.status)">{{ risk.status }}</span>
+            <span class="owner">Owner: {{ risk.owner }}</span>
+            <span class="eta">{{ risk.eta }}</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="sprint-board">
+      <header class="section-head">
+        <div>
+          <h2>Sprint commitments</h2>
+          <p>Enable recruiters and hiring managers with focused actions this week.</p>
+        </div>
+      </header>
+      <ul>
+        <li *ngFor="let action of sprintActions">
+          <div class="action-text">
+            <h3>{{ action.action }}</h3>
+            <p>{{ action.detail }}</p>
+          </div>
+          <div class="action-meta">
+            <span class="owner">{{ action.owner }}</span>
+            <span class="due">{{ action.due }}</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+</div>

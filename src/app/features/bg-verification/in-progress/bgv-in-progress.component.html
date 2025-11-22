@@ -1,0 +1,99 @@
+<section class="bgv-progress">
+  <header class="bgv-progress__header">
+    <div>
+      <h1>BG Verification · Live investigations</h1>
+      <p>{{ missionStatement }}</p>
+    </div>
+    <div class="bgv-progress__actions">
+      <button type="button" class="btn btn-ghost">Share tracker</button>
+      <button type="button" class="btn btn-primary">Trigger partner sync</button>
+    </div>
+  </header>
+
+  <section class="bgv-progress__summary">
+    <article class="summary-card">
+      <h2>{{ totalInvestigations }}</h2>
+      <p>Investigations running</p>
+      <span>Average ETA {{ averageEta }} days</span>
+    </article>
+    <article class="summary-card">
+      <h2>{{ awaitingClientCount }}</h2>
+      <p>Waiting on candidate / HR</p>
+      <span>Send reminder now</span>
+    </article>
+    <article class="summary-card">
+      <h2>{{ escalationsCount }}</h2>
+      <p>Partner escalations</p>
+      <span>Daily huddle required</span>
+    </article>
+  </section>
+
+  <div class="bgv-progress__filters">
+    <div class="chip-group">
+      <button
+        type="button"
+        class="chip"
+        *ngFor="let filter of filters"
+        [class.chip--active]="selectedFilter === filter.id"
+        (click)="setFilter(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+    <button type="button" class="btn btn-outline">Download daily digest</button>
+  </div>
+
+  <section class="bgv-progress__grid" *ngIf="filteredInvestigations.length; else empty">
+    <article class="progress-card" *ngFor="let record of filteredInvestigations">
+      <header class="progress-card__header">
+        <div>
+          <h2>{{ record.candidate }}</h2>
+          <p>{{ record.role }}</p>
+        </div>
+        <span [ngClass]="getStatusClass(record.status)">{{ record.status }}</span>
+      </header>
+
+      <div class="progress-card__meta">
+        <div>
+          <span class="label">Provider</span>
+          <strong>{{ record.provider }}</strong>
+        </div>
+        <div>
+          <span class="label">Stages</span>
+          <strong>{{ record.stages.join(', ') }}</strong>
+        </div>
+        <div>
+          <span class="label">Started</span>
+          <span class="timeline">{{ record.startedOn | date: 'MMM d' }}</span>
+        </div>
+        <div>
+          <span class="label">ETA</span>
+          <span [ngClass]="getEtaChipClass(record)">{{ record.etaDays }} days</span>
+        </div>
+      </div>
+
+      <div class="progress-card__bar">
+        <span>Completion</span>
+        <div class="progress">
+          <span class="progress__fill" [style.width]="getProgressWidth(record)"></span>
+        </div>
+        <strong>{{ record.progress }}%</strong>
+      </div>
+
+      <p class="progress-card__notes">{{ record.notes }}</p>
+
+      <footer class="progress-card__footer">
+        <button type="button" class="btn-light">Update partner</button>
+        <button type="button" class="btn-outline">Request documents</button>
+        <button type="button" class="btn-link">View history</button>
+      </footer>
+    </article>
+  </section>
+
+  <ng-template #empty>
+    <section class="bgv-progress__empty">
+      <h3>No investigations under this filter</h3>
+      <p>All checks are either cleared or yet to be assigned.</p>
+    </section>
+  </ng-template>
+</section>

@@ -1,0 +1,107 @@
+<section class="bgv">
+  <header class="bgv__header">
+    <div>
+      <h1>BG Verification · Pending queue</h1>
+      <p>{{ missionStatement }}</p>
+    </div>
+    <div class="bgv__actions">
+      <button type="button" class="btn btn-ghost">Notify partner</button>
+      <button type="button" class="btn btn-primary">Create escalation</button>
+    </div>
+  </header>
+
+  <section class="bgv__summary">
+    <article class="summary-card">
+      <h2>{{ totalPending }}</h2>
+      <p>Cases awaiting closure</p>
+      <span>{{ averagePendingDays }} day average in queue</span>
+    </article>
+    <article class="summary-card">
+      <h2>{{ documentsRequired }}</h2>
+      <p>Document follow-ups</p>
+      <span>Send gentle reminders today</span>
+    </article>
+    <article class="summary-card">
+      <h2>{{ highRiskCount }}</h2>
+      <p>High-risk alerts</p>
+      <span>Escalate with compliance partner</span>
+    </article>
+  </section>
+
+  <div class="bgv__filters">
+    <div class="chip-group">
+      <button
+        type="button"
+        class="chip"
+        *ngFor="let filter of filters"
+        [class.chip--active]="selectedFilter === filter.id"
+        (click)="setFilter(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+    <button type="button" class="btn btn-outline">Download partner handoff</button>
+  </div>
+
+  <section class="bgv__list" *ngIf="filteredCases.length; else emptyState">
+    <article class="case-card" *ngFor="let caseItem of filteredCases">
+      <header class="case-card__header">
+        <div>
+          <h2>{{ caseItem.candidate }}</h2>
+          <p>{{ caseItem.role }}</p>
+        </div>
+        <span [ngClass]="getStatusClass(caseItem.status)">{{ caseItem.status }}</span>
+      </header>
+
+      <div class="case-card__meta">
+        <div>
+          <span class="label">Checks</span>
+          <strong>{{ caseItem.checks.join(', ') }}</strong>
+        </div>
+        <div>
+          <span class="label">Provider</span>
+          <strong>{{ caseItem.provider }}</strong>
+        </div>
+        <div>
+          <span class="label">Submitted</span>
+          <span class="timeline">{{ caseItem.submittedOn | date: 'MMM d' }}</span>
+        </div>
+        <div>
+          <span class="label">Days pending</span>
+          <span class="timeline timeline--counter">{{ caseItem.daysPending }} days</span>
+        </div>
+        <div>
+          <span class="label">Risk signal</span>
+          <span [ngClass]="getRiskClass(caseItem.risk)">{{ caseItem.risk }}</span>
+        </div>
+      </div>
+
+      <p class="case-card__notes">{{ caseItem.notes }}</p>
+
+      <footer class="case-card__footer">
+        <span class="documents">{{ getDocumentsLabel(caseItem) }}</span>
+        <div class="case-card__actions">
+          <button type="button" class="btn-light">Send reminder</button>
+          <button type="button" class="btn-outline">Reassign provider</button>
+          <button type="button" class="btn-link">View audit trail</button>
+        </div>
+      </footer>
+    </article>
+  </section>
+
+  <ng-template #emptyState>
+    <section class="bgv__empty">
+      <h3>No pending checks under this view</h3>
+      <p>Celebrate a clean slate or pivot filters to spot upcoming work.</p>
+    </section>
+  </ng-template>
+
+  <section class="bgv__roadmap">
+    <h2>What’s next for BGV ops</h2>
+    <ul>
+      <li>24-hour auto-escalations with nudges sent to providers and hiring managers.</li>
+      <li>Candidates can upload missing documents straight from the onboarding portal.</li>
+      <li>Risk analytics heatmap for leadership with city-wise trends.</li>
+    </ul>
+  </section>
+</section>

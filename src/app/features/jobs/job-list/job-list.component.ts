@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14,8 +14,9 @@ import { PagedResult } from '../../../shared/models/paged-result.model';
   templateUrl: './job-list.component.html',
   styleUrls: ['./job-list.component.css']
 })
-export class JobListComponent implements OnInit {
+export class JobListComponent implements OnInit, OnDestroy {
   jobs: Job[] = [];
+  filteredJobs: Job[] = [];
   pagedResult?: PagedResult<Job>;
   currentPage = 1;
   pageSize = 10;
@@ -26,6 +27,20 @@ export class JobListComponent implements OnInit {
   jobPendingDelete: Job | null = null;
   deleteInProgress = false;
   deleteError: string | null = null;
+
+  totalJobsCount = 0;
+  matchingJobsCount = 0;
+  activeJobsCount = 0;
+  inactiveJobsCount = 0;
+  closingSoonCount = 0;
+  closingSoonJobs: Job[] = [];
+  recentlyPostedJobs: Job[] = [];
+  departmentBreakdown: Array<{ label: string; count: number; percentage: number }> = [];
+  locationBreakdown: Array<{ label: string; count: number; percentage: number }> = [];
+  lastRefreshed: Date | null = null;
+  readonly closingSoonThresholdDays = 14;
+
+  private readonly handleDocumentClick = () => this.closeContextMenu();
   
   // Context menu state
   showContextMenu = false;
@@ -42,17 +57,23 @@ export class JobListComponent implements OnInit {
   ngOnInit(): void {
     this.loadJobs();
     // Close context menu on any click
-    document.addEventListener('click', () => this.closeContextMenu());
+    document.addEventListener('click', this.handleDocumentClick, { passive: true });
+  }
+
+  ngOnDestroy(): void {
+    document.removeEventListener('click', this.handleDocumentClick);
   }
 
   loadJobs(): void {
     this.loading = true;
     this.error = null;
-    this.jobService.getJobs(this.currentPage, this.pageSize).subscribe({
+    this.jobService.getJobs(this.currentPage, this.pageSize, this.searchTerm).subscribe({
       next: (result) => {
         this.pagedResult = result;
-        this.jobs = result.items;
+        this.jobs = result.items ?? [];
+        this.lastRefreshed = new Date();
         this.loading = false;
+        this.applySearchFilter();
       },
       error: (err) => {
         this.error = 'Failed to load jobs. Please try again.';
@@ -138,6 +159,97 @@ export class JobListComponent implements OnInit {
     return pages;
   }
 
+  private applySearchFilter(): void {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (term) {
+      this.filteredJobs = this.jobs.filter(job => {
+        const title = job.title?.toLowerCase() ?? '';
+        const department = job.department?.toLowerCase() ?? '';
+        const location = job.location?.toLowerCase() ?? '';
+        return title.includes(term) || department.includes(term) || location.includes(term);
+      });
+    } else {
+      this.filteredJobs = [...this.jobs];
+    }
+    this.buildInsights();
+  }
+
+  private buildInsights(): void {
+    this.matchingJobsCount = this.filteredJobs.length;
+    this.totalJobsCount = this.pagedResult?.totalCount ?? this.jobs.length;
+
+    const active = this.filteredJobs.filter(job => job.isActive);
+    const inactive = this.filteredJobs.filter(job => !job.isActive);
+    this.activeJobsCount = active.length;
+    this.inactiveJobsCount = inactive.length;
+
+    const now = new Date();
+    this.closingSoonJobs = this.filteredJobs
+      .filter(job => {
+        const closingDate = this.toDate(job.closingDate);
+        if (!closingDate) return false;
+        const diffDays = (closingDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+        return diffDays >= 0 && diffDays <= this.closingSoonThresholdDays;
+      })
+      .sort((a, b) => this.sortByDateAscending(a.closingDate, b.closingDate))
+      .slice(0, 5);
+    this.closingSoonCount = this.closingSoonJobs.length;
+
+    this.recentlyPostedJobs = [...this.filteredJobs]
+      .sort((a, b) => this.sortByDateDescending(a.postedDate, b.postedDate))
+      .slice(0, 5);
+
+    this.departmentBreakdown = this.buildBreakdown(this.filteredJobs, 'department');
+    this.locationBreakdown = this.buildBreakdown(this.filteredJobs, 'location');
+  }
+
+  private buildBreakdown(jobs: Job[], key: 'department' | 'location'): Array<{ label: string; count: number; percentage: number }> {
+    if (!jobs.length) return [];
+    const tally = new Map<string, number>();
+    for (const job of jobs) {
+      const raw = (job[key] || 'Unknown').trim();
+      const label = raw || 'Unassigned';
+      tally.set(label, (tally.get(label) ?? 0) + 1);
+    }
+
+    const total = jobs.length;
+    return Array.from(tally.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([label, count]) => ({
+        label,
+        count,
+        percentage: Math.round((count / total) * 100)
+      }));
+  }
+
+  private toDate(value: Date | string | undefined): Date | null {
+    if (!value) return null;
+    if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+    const parsed = new Date(value);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  private sortByDateAscending(a: Date | string | undefined, b: Date | string | undefined): number {
+    const dateA = this.toDate(a)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+    const dateB = this.toDate(b)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+    return dateA - dateB;
+  }
+
+  private sortByDateDescending(a: Date | string | undefined, b: Date | string | undefined): number {
+    const dateA = this.toDate(a)?.getTime() ?? 0;
+    const dateB = this.toDate(b)?.getTime() ?? 0;
+    return dateB - dateA;
+  }
+
+  trackByJobId(index: number, job: Job): number | string {
+    return job?.id ?? job?.publicId ?? index;
+  }
+
+  trackByLabel(index: number, entry: { label: string }): string {
+    return entry?.label ?? `label-${index}`;
+  }
+
   private formatNow(): string {
     const formatter = new Intl.DateTimeFormat('en-US', {
       year: 'numeric', month: 'short', day: '2-digit',
@@ -162,8 +274,14 @@ export class JobListComponent implements OnInit {
 
   shareJob(): void {
     if (!this.selectedJob) return;
-    
-    const jobUrl = `${window.location.origin}/public-jobs/${this.selectedJob.publicId}/apply`;
+    const publicId = this.selectedJob.publicId;
+    if (!publicId) {
+      this.toast.error('This job does not have a public link yet.', 3000, true);
+      this.closeContextMenu();
+      return;
+    }
+
+    const jobUrl = `${window.location.origin}/public-jobs/${publicId}/apply`;
     
     if (navigator.share) {
       navigator.share({
@@ -186,8 +304,14 @@ export class JobListComponent implements OnInit {
 
   generateLink(): void {
     if (!this.selectedJob) return;
-    
-    const jobUrl = `${window.location.origin}/public-jobs/${this.selectedJob.publicId}/apply`;
+    const publicId = this.selectedJob.publicId;
+    if (!publicId) {
+      this.toast.error('This job does not have a public link yet.', 3000, true);
+      this.closeContextMenu();
+      return;
+    }
+
+    const jobUrl = `${window.location.origin}/public-jobs/${publicId}/apply`;
     this.copyToClipboard(jobUrl);
     this.closeContextMenu();
   }

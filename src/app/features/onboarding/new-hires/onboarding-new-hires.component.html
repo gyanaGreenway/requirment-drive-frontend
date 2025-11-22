@@ -1,0 +1,131 @@
+<section class="new-hires">
+  <header class="new-hires__header">
+    <div>
+      <h1>New Hires</h1>
+      <p>Guided onboarding view to keep equipment, compliance, and culture touchpoints on track.</p>
+    </div>
+    <div class="new-hires__actions">
+      <button type="button" class="btn btn-ghost">Download onboarding pack</button>
+      <button type="button" class="btn btn-primary">
+        <span aria-hidden="true">＋</span>
+        Add new hire
+      </button>
+    </div>
+  </header>
+
+  <section class="new-hires__summary">
+    <article class="summary-card">
+      <p class="summary-card__label">Total in onboarding</p>
+      <h3>{{ totalHires }}</h3>
+      <span class="summary-card__hint">Avg checklist completion {{ averageChecklistCompletion }}%</span>
+    </article>
+    <article class="summary-card">
+      <p class="summary-card__label">Starting in 7 days</p>
+      <h3>{{ startingSoonCount }}</h3>
+      <span class="summary-card__hint">Prep welcome kits and first-week agenda</span>
+    </article>
+    <article class="summary-card">
+      <p class="summary-card__label">IT setup pending</p>
+      <h3>{{ itPendingCount }}</h3>
+      <span class="summary-card__hint">Escalate device logistics</span>
+    </article>
+    <article class="summary-card">
+      <p class="summary-card__label">Compliance follow-ups</p>
+      <h3>{{ compliancePendingCount }}</h3>
+      <span class="summary-card__hint">Tasks due this week {{ tasksDueThisWeek }}</span>
+    </article>
+  </section>
+
+  <div class="new-hires__filters">
+    <button
+      type="button"
+      class="chip"
+      *ngFor="let filter of filters"
+      [class.chip--active]="selectedFilter === filter.id"
+      (click)="setFilter(filter.id)"
+    >
+      {{ filter.label }}
+    </button>
+  </div>
+
+  <section class="new-hires__next" *ngIf="nextStarting as upcoming">
+    <div>
+      <span class="next__label">Next to join</span>
+      <h2>{{ upcoming.name }}</h2>
+      <p>{{ upcoming.role }} · {{ upcoming.location }}</p>
+    </div>
+    <div class="next__meta">
+      <span class="next__countdown" *ngIf="daysUntilStart(upcoming.startDate) >= 0">
+        {{ daysUntilStart(upcoming.startDate) }} days to go
+      </span>
+      <span class="next__countdown" *ngIf="daysUntilStart(upcoming.startDate) < 0">Joined this week</span>
+      <span>Manager: {{ upcoming.manager }}</span>
+      <span>Buddy: {{ upcoming.buddy }}</span>
+    </div>
+    <div class="next__status">
+      <span [ngClass]="getStatusBadge(upcoming.status)">{{ upcoming.status }}</span>
+      <button type="button" class="btn-link">Open onboarding brief</button>
+    </div>
+  </section>
+
+  <section class="new-hires__grid" *ngIf="filteredHires.length; else emptyState">
+    <article class="hire-card" *ngFor="let hire of filteredHires">
+      <header class="hire-card__header">
+        <div>
+          <h3>{{ hire.name }}</h3>
+          <p>{{ hire.role }} · {{ hire.location }}</p>
+        </div>
+        <span [ngClass]="getStatusBadge(hire.status)">{{ hire.status }}</span>
+      </header>
+
+      <div class="hire-card__meta">
+        <span>Start {{ hire.startDate | date: 'EEE, MMM d' }}</span>
+        <span>Manager {{ hire.manager }}</span>
+        <span>Buddy {{ hire.buddy }}</span>
+        <span>ID {{ hire.id }}</span>
+      </div>
+
+      <div class="hire-card__progress">
+        <span>Checklist completion</span>
+        <div class="progress">
+          <span class="progress__fill" [style.width]="getProgressWidth(hire.checklistCompletion)"></span>
+        </div>
+        <strong>{{ hire.checklistCompletion }}%</strong>
+      </div>
+
+      <p class="hire-card__notes">{{ hire.notes }}</p>
+
+      <div class="hire-card__tags">
+        <span class="tag" [class.tag--warning]="!hire.equipmentDispatched">
+          {{ hire.equipmentDispatched ? 'Equipment dispatched' : 'Device dispatch pending' }}
+        </span>
+        <span class="tag" [class.tag--warning]="!hire.backgroundCheckClear">
+          {{ hire.backgroundCheckClear ? 'BGV cleared' : 'BGV pending' }}
+        </span>
+        <span class="tag">Tasks due {{ hire.tasksDueThisWeek }}</span>
+      </div>
+
+      <footer class="hire-card__footer">
+        <button type="button" class="btn-light">View runbook</button>
+        <button type="button" class="btn-outline">Send reminder</button>
+        <button type="button" class="btn-link">Log touchpoint</button>
+      </footer>
+    </article>
+  </section>
+
+  <ng-template #emptyState>
+    <section class="new-hires__empty">
+      <h3>No hires under this filter</h3>
+      <p>Switch filters or add a new hire to kick-off their journey.</p>
+    </section>
+  </ng-template>
+
+  <section class="new-hires__roadmap">
+    <h2>Onboarding playbook upgrades coming soon</h2>
+    <ul>
+      <li>Automated welcome email sequences synced to start date.</li>
+      <li>Slack bot nudges for buddies the day before joining.</li>
+      <li>Day-30 sentiment pulse with analytics dashboard.</li>
+    </ul>
+  </section>
+</section>

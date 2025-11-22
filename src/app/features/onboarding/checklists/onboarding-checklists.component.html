@@ -1,0 +1,96 @@
+<section class="checklists">
+  <header class="checklists__header">
+    <div>
+      <h1>Checklist Studio</h1>
+      <p>{{ purposeStatement }}</p>
+    </div>
+    <div class="checklists__actions">
+      <button type="button" class="btn btn-ghost">Import template</button>
+      <button type="button" class="btn btn-primary">Design new checklist</button>
+    </div>
+  </header>
+
+  <section class="checklists__summary">
+    <article class="summary-card">
+      <h2>{{ totalTemplates }}</h2>
+      <p>Blueprints across roles</p>
+      <span>{{ totalItemsAcrossTemplates }} steps curated</span>
+    </article>
+    <article class="summary-card">
+      <h2>{{ averageCompletion }}%</h2>
+      <p>Average completion rate</p>
+      <span>{{ onTrackRuns }} cohorts on-track</span>
+    </article>
+    <article class="summary-card">
+      <h2>{{ laggingRuns }}</h2>
+      <p>Runs needing nudges</p>
+      <span>Send buddy or manager follow-up</span>
+    </article>
+  </section>
+
+  <section class="templates">
+    <h2>Template library</h2>
+    <div class="template-grid">
+      <article class="template-card" *ngFor="let template of templates">
+        <header>
+          <h3>{{ template.name }}</h3>
+          <span class="audience">{{ template.audience }}</span>
+        </header>
+        <dl class="meta">
+          <div>
+            <dt>Items</dt>
+            <dd>{{ template.items }}</dd>
+          </div>
+          <div>
+            <dt>Completion</dt>
+            <dd>{{ template.completionRate }}%</dd>
+          </div>
+          <div>
+            <dt>Time to complete</dt>
+            <dd>{{ template.timeToComplete }}</dd>
+          </div>
+          <div>
+            <dt>Owner</dt>
+            <dd>{{ template.owner }}</dd>
+          </div>
+        </dl>
+        <ul class="highlights">
+          <li *ngFor="let highlight of template.highlights">{{ highlight }}</li>
+        </ul>
+        <footer>
+          <span>Updated {{ template.lastUpdated | date: 'MMM d, y' }}</span>
+          <div class="template-actions">
+            <button type="button" class="btn-light">Preview flow</button>
+            <button type="button" class="btn-outline">Duplicate</button>
+          </div>
+        </footer>
+      </article>
+    </div>
+  </section>
+
+  <section class="runs" *ngIf="activeRuns.length">
+    <h2>Active onboarding runs</h2>
+    <div class="runs-grid">
+      <article class="run-card" *ngFor="let run of activeRuns">
+        <header>
+          <h3>{{ run.candidate }}</h3>
+          <span class="template-tag">{{ run.template }}</span>
+        </header>
+        <div class="run-progress">
+          <span>Progress</span>
+          <div class="progress">
+            <span class="progress__fill" [style.width]="getProgressWidth(run.progress)"></span>
+          </div>
+          <strong>{{ run.progress }}%</strong>
+        </div>
+        <ul class="anchor-tasks">
+          <li *ngFor="let anchor of run.anchorTasks">{{ anchor }}</li>
+        </ul>
+        <footer>
+          <span [ngClass]="getStatusClass(run.status)">{{ run.status }}</span>
+          <button type="button" class="btn-link">Open run</button>
+        </footer>
+      </article>
+    </div>
+  </section>
+</section>

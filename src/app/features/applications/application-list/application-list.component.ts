@@ -39,6 +39,23 @@ export class ApplicationListComponent implements OnInit {
   ];
   loading = false;
   error: string | null = null;
+  lastRefreshed: Date | null = null;
+
+  totalApplicationsCount = 0;
+  currentPageCount = 0;
+  newThisWeekCount = 0;
+  shortlistedCount = 0;
+  hiredCount = 0;
+  shortlistRate = 0;
+  pipelineColumns: Array<{ status: ApplicationStatus; label: string; items: JobApplication[]; accent: string }> = [];
+  recentApplications: JobApplication[] = [];
+
+  readonly statusAccentMap: Record<ApplicationStatus, string> = {
+    [ApplicationStatus.New]: 'status-new',
+    [ApplicationStatus.Shortlisted]: 'status-shortlisted',
+    [ApplicationStatus.Rejected]: 'status-rejected',
+    [ApplicationStatus.Hired]: 'status-hired'
+  };
 
   constructor(
     private applicationService: ApplicationService,
@@ -56,7 +73,7 @@ export class ApplicationListComponent implements OnInit {
   loadJobs(): void {
     this.jobService.getJobs(1, 100).subscribe({
       next: (result) => {
-        this.jobs = result.items;
+        this.jobs = result.items ?? [];
       },
       error: (err) => console.error('Failed to load jobs', err)
     });
@@ -65,7 +82,8 @@ export class ApplicationListComponent implements OnInit {
   loadCandidates(): void {
     this.candidateService.getCandidates(1, 100).subscribe({
       next: (result) => {
-        this.candidates = result.items.filter(c => !c.isDeleted);
+        const items = result.items ?? [];
+        this.candidates = items.filter(c => !c.isDeleted);
       },
       error: (err) => console.error('Failed to load candidates', err)
     });
@@ -77,8 +95,10 @@ export class ApplicationListComponent implements OnInit {
     this.applicationService.getApplications(this.filter).subscribe({
       next: (result) => {
         this.pagedResult = result;
-        this.applications = result.items;
+        this.applications = result.items ?? [];
         this.loading = false;
+        this.lastRefreshed = new Date();
+        this.buildInsights();
       },
       error: (err) => {
         this.error = 'Failed to load applications. Please try again.';
@@ -127,18 +147,7 @@ export class ApplicationListComponent implements OnInit {
   }
 
   getStatusClass(status: ApplicationStatus): string {
-    switch (status) {
-      case ApplicationStatus.New:
-        return 'badge bg-primary';
-      case ApplicationStatus.Shortlisted:
-        return 'badge bg-info';
-      case ApplicationStatus.Hired:
-        return 'badge bg-success';
-      case ApplicationStatus.Rejected:
-        return 'badge bg-danger';
-      default:
-        return 'badge bg-secondary';
-    }
+    return this.statusAccentMap[status] ?? 'status-generic';
   }
 
   getStatusLabel(status: ApplicationStatus | undefined): string {
@@ -183,6 +192,61 @@ export class ApplicationListComponent implements OnInit {
   onEndDateChange(value: string): void {
     this.filter.endDate = value ? new Date(value) : undefined;
     this.onFilterChange();
+  }
+
+  trackByApplication = (_index: number, application: JobApplication): number => application.id;
+
+  trackByColumn = (_index: number, column: { status: ApplicationStatus }): ApplicationStatus => column.status;
+
+  getCandidateInitials(application: JobApplication): string {
+    const first = application.candidate?.firstName?.charAt(0) ?? '';
+    const last = application.candidate?.lastName?.charAt(0) ?? '';
+    const initials = `${first}${last}`.trim();
+    return initials || 'CA';
+  }
+
+  getDaysSinceApplied(application: JobApplication): number | null {
+    if (!application.appliedDate) return null;
+    const applied = new Date(application.appliedDate);
+    if (Number.isNaN(applied.getTime())) return null;
+    const diffMs = Date.now() - applied.getTime();
+    return Math.max(0, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+  }
+
+  private buildInsights(): void {
+    const items = this.applications ?? [];
+    this.currentPageCount = items.length;
+    this.totalApplicationsCount = this.pagedResult?.totalCount ?? items.length;
+
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    this.newThisWeekCount = items.filter(app => {
+      const applied = new Date(app.appliedDate);
+      return !Number.isNaN(applied.getTime()) && applied >= sevenDaysAgo;
+    }).length;
+
+    this.shortlistedCount = items.filter(app => app.status === ApplicationStatus.Shortlisted).length;
+    this.hiredCount = items.filter(app => app.status === ApplicationStatus.Hired).length;
+    this.shortlistRate = items.length ? Math.round((this.shortlistedCount / items.length) * 100) : 0;
+
+    const columns: Array<{ status: ApplicationStatus; label: string; items: JobApplication[]; accent: string }> = [
+      { status: ApplicationStatus.New, label: APPLICATION_STATUS_LABELS[ApplicationStatus.New], items: [], accent: this.statusAccentMap[ApplicationStatus.New] },
+      { status: ApplicationStatus.Shortlisted, label: APPLICATION_STATUS_LABELS[ApplicationStatus.Shortlisted], items: [], accent: this.statusAccentMap[ApplicationStatus.Shortlisted] },
+      { status: ApplicationStatus.Hired, label: APPLICATION_STATUS_LABELS[ApplicationStatus.Hired], items: [], accent: this.statusAccentMap[ApplicationStatus.Hired] },
+      { status: ApplicationStatus.Rejected, label: APPLICATION_STATUS_LABELS[ApplicationStatus.Rejected], items: [], accent: this.statusAccentMap[ApplicationStatus.Rejected] }
+    ];
+
+    for (const application of items) {
+      const column = columns.find(col => col.status === application.status);
+      if (column) {
+        column.items.push(application);
+      }
+    }
+    this.pipelineColumns = columns;
+
+    this.recentApplications = [...items]
+      .sort((a, b) => new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime())
+      .slice(0, 6);
   }
 }
 

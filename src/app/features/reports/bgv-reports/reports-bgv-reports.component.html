@@ -1,0 +1,118 @@
+<section class="bgv-view">
+  <header class="hero">
+    <div class="hero-copy">
+      <h1>Background Screening Intelligence</h1>
+      <p>{{ narrative }}</p>
+      <div class="range-selector">
+        <button
+          type="button"
+          class="range-button"
+          *ngFor="let filter of rangeFilters"
+          [class.active]="selectedRange === filter.id"
+          (click)="setRange(filter.id)"
+        >
+          {{ filter.label }}
+        </button>
+      </div>
+    </div>
+    <div class="hero-cta">
+      <article class="cta-card">
+        <h2>Run compliance digest</h2>
+        <p>Generate a ready-to-share weekly summary covering SLA performance, escalations, and audit trails.</p>
+        <div class="cta-actions">
+          <button type="button">Download PDF</button>
+          <button type="button" class="ghost">Send to stakeholders</button>
+        </div>
+      </article>
+    </div>
+  </header>
+
+  <section class="metric-deck">
+    <article class="metric-card" *ngFor="let metric of metrics">
+      <header>
+        <span class="metric-label">{{ metric.label }}</span>
+        <span class="metric-delta" [ngClass]="getTrendClass(metric.trend)">{{ metric.delta }}</span>
+      </header>
+      <strong>{{ metric.value }}</strong>
+    </article>
+  </section>
+
+  <section class="region-grid">
+    <article class="region-card" *ngFor="let region of regionSnapshots">
+      <header>
+        <h2>{{ region.region }}</h2>
+        <span class="badge">{{ region.vendor }}</span>
+      </header>
+      <div class="region-stats">
+        <div>
+          <span class="stat-label">Clear rate</span>
+          <strong>{{ region.clearRate }}%</strong>
+        </div>
+        <div>
+          <span class="stat-label">Avg TAT</span>
+          <strong>{{ region.avgTurnaround }} days</strong>
+        </div>
+        <div>
+          <span class="stat-label">Escalations</span>
+          <strong>{{ region.escalations }}</strong>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="vendor-section">
+    <header>
+      <h2>Vendor scorecard</h2>
+      <button type="button" class="ghost">View partner contracts</button>
+    </header>
+    <div class="vendor-table">
+      <div class="vendor-head">
+        <span>Partner</span>
+        <span>Coverage</span>
+        <span>SLA</span>
+        <span>Avg TAT</span>
+        <span>Compliance</span>
+        <span>Backlog</span>
+      </div>
+      <div class="vendor-row" *ngFor="let vendor of vendorScores">
+        <span>{{ vendor.partner }}</span>
+        <span>{{ vendor.coverage }}</span>
+        <span>{{ vendor.sla }}</span>
+        <span>{{ vendor.avgTAT }}d</span>
+        <span>{{ vendor.compliance }}%</span>
+        <span>{{ vendor.backlog }}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="compliance-grid">
+    <article class="compliance-card" *ngFor="let signal of complianceSignals">
+      <header>
+        <h3>{{ signal.title }}</h3>
+        <span class="signal-badge" [ngClass]="getComplianceClass(signal.score)">{{ signal.score }}%</span>
+      </header>
+      <p>{{ signal.detail }}</p>
+    </article>
+  </section>
+
+  <section class="exceptions-board">
+    <header>
+      <h2>Escalation watchlist</h2>
+      <p>Coordination across talent security, legal, and onboarding teams.</p>
+    </header>
+    <ul>
+      <li *ngFor="let exception of exceptions">
+        <div class="exception-primary">
+          <span class="exception-id">{{ exception.id }}</span>
+          <h3>{{ exception.candidate }}</h3>
+          <p>{{ exception.risk }}</p>
+        </div>
+        <div class="exception-meta">
+          <span class="owner">{{ exception.owner }}</span>
+          <span class="status-pill" [ngClass]="getExceptionClass(exception.status)">{{ exception.status }}</span>
+          <span class="eta" *ngIf="exception.eta">{{ exception.eta }}</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+</section>

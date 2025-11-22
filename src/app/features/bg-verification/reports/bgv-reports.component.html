@@ -1,0 +1,151 @@
+<section class="reports-view">
+  <header class="reports-hero">
+    <div class="hero-copy">
+      <h1>BG Verification Intelligence</h1>
+      <p>{{ narrative }}</p>
+      <div class="range-selector">
+        <button
+          type="button"
+          class="range-button"
+          *ngFor="let range of ranges"
+          [class.active]="selectedRange === range.id"
+          (click)="setRange(range.id)"
+        >
+          {{ range.label }}
+        </button>
+      </div>
+    </div>
+    <div class="hero-cta">
+      <div class="cta-card">
+        <h2>Weekly compliance digest</h2>
+        <p>Export-ready briefing that summarises escalations, vendor SLA, and audit exceptions.</p>
+        <div class="cta-actions">
+          <button type="button">Download XLSX</button>
+          <button type="button" class="ghost">Email to stakeholders</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="metric-deck">
+    <article class="metric-card" *ngFor="let metric of metrics">
+      <header>
+        <span class="metric-label">{{ metric.label }}</span>
+        <span class="metric-delta" [ngClass]="getTrendClass(metric.trend)">{{ metric.delta }}</span>
+      </header>
+      <strong>{{ metric.value }}</strong>
+    </article>
+  </section>
+
+  <section class="insights-grid">
+    <article class="insight-card span-2">
+      <header class="card-header">
+        <div>
+          <h2>Throughput velocity</h2>
+          <p>Completions vs escalations and average turnaround (days)</p>
+        </div>
+        <span class="badge">Trend view</span>
+      </header>
+      <div class="trend-chart">
+        <div class="trend-row" *ngFor="let point of trendData">
+          <span class="trend-month">{{ point.month }}</span>
+          <div class="trend-bars">
+            <div class="trend-bar trend-bar--completed" [style.width]="getCompletedWidth(point)">
+              <span>{{ point.completed }} cleared</span>
+            </div>
+            <div class="trend-bar trend-bar--escalated" [style.width]="getEscalationWidth(point)">
+              <span>{{ point.escalations }} escalated</span>
+            </div>
+          </div>
+          <span class="trend-tat">{{ point.avgTurnaround }}d</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="insight-card">
+      <header class="card-header">
+        <div>
+          <h2>Risk mix</h2>
+          <p>Distribution of investigation outcomes</p>
+        </div>
+      </header>
+      <ul class="risk-list">
+        <li *ngFor="let segment of riskMix">
+          <span class="risk-label">{{ segment.label }}</span>
+          <div class="risk-bar">
+            <div class="risk-fill" [style.width]="getRiskBarWidth(segment)"></div>
+          </div>
+          <span class="risk-meta">{{ segment.count }} cases · {{ segment.percentage }}%</span>
+        </li>
+      </ul>
+    </article>
+
+    <article class="insight-card">
+      <header class="card-header">
+        <div>
+          <h2>Compliance signals</h2>
+          <p>Policy adherence snapshots</p>
+        </div>
+      </header>
+      <ul class="signal-list">
+        <li *ngFor="let signal of complianceSignals">
+          <span class="signal-title">{{ signal.title }}</span>
+          <span class="signal-badge" [ngClass]="getComplianceClass(signal.score)">{{ signal.score }}%</span>
+          <p>{{ signal.description }}</p>
+        </li>
+      </ul>
+    </article>
+
+    <article class="insight-card span-2">
+      <header class="card-header">
+        <div>
+          <h2>Vendor scorecard</h2>
+          <p>Maintain SLA accountability across partners</p>
+        </div>
+        <button type="button" class="ghost">View full partner report</button>
+      </header>
+      <div class="vendor-table">
+        <header class="vendor-head">
+          <span>Provider</span>
+          <span>Region</span>
+          <span>SLA</span>
+          <span>Avg TAT</span>
+          <span>Compliance</span>
+          <span>Active</span>
+        </header>
+        <div class="vendor-row" *ngFor="let partner of partnerScores">
+          <span>{{ partner.vendor }}</span>
+          <span>{{ partner.region }}</span>
+          <span>{{ partner.sla }}</span>
+          <span>{{ partner.avgTAT }}d</span>
+          <span>{{ partner.compliance }}%</span>
+          <span>{{ partner.activeCases }}</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="insight-card span-2">
+      <header class="card-header">
+        <div>
+          <h2>Exception spotlight</h2>
+          <p>Follow-up queue for compliance and hiring teams</p>
+        </div>
+        <button type="button">Open escalation board</button>
+      </header>
+      <ul class="exception-list">
+        <li *ngFor="let exception of exceptionSpotlights">
+          <div class="exception-primary">
+            <span class="exception-id">{{ exception.id }}</span>
+            <h3>{{ exception.candidate }}</h3>
+            <p>{{ exception.issue }}</p>
+          </div>
+          <div class="exception-meta">
+            <span class="owner">{{ exception.owner }}</span>
+            <span class="status-pill" [ngClass]="getStatusClass(exception.status)">{{ exception.status }}</span>
+            <span class="resolved" *ngIf="exception.resolvedOn">Closed {{ exception.resolvedOn | date: 'MMM d' }}</span>
+          </div>
+        </li>
+      </ul>
+    </article>
+  </section>
+</section>

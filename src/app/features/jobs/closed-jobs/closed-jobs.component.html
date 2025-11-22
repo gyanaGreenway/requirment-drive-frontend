@@ -1,0 +1,15 @@
+<section class="section">
+  <h2>Closed Jobs</h2>
+  <p>Previously closed job postings.</p>
+  <table class="table">
+    <thead>
+      <tr><th>Title</th><th>Closed Date</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let job of closedJobs">
+        <td>{{ job.title }}</td>
+        <td>{{ job.closedDate }}</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

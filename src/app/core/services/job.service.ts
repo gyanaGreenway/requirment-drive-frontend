@@ -12,8 +12,12 @@ import { environment } from '../../../environments/environment';
 export class JobService {
   constructor(private api: ApiService) {}
 
-  getJobs(pageNumber: number = 1, pageSize: number = 10): Observable<PagedResult<Job>> {
-    return this.api.get<PagedResult<Job>>('Jobs', { pageNumber, pageSize });
+  getJobs(pageNumber: number = 1, pageSize: number = 10, searchTerm?: string): Observable<PagedResult<Job>> {
+    const params: Record<string, any> = { pageNumber, pageSize };
+    if (searchTerm && searchTerm.trim()) {
+      params['searchTerm'] = searchTerm.trim();
+    }
+    return this.api.get<PagedResult<Job>>('Jobs', params);
   }
 
   // Attempt multiple endpoint variants to cope with backend naming differences.

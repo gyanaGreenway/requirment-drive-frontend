@@ -1,0 +1,93 @@
+<section class="documents">
+  <header class="documents__header">
+    <div>
+      <h1>Document Control Center</h1>
+      <p>Track critical HR artifacts, compliance updates, and sharing activity in one view.</p>
+    </div>
+    <div class="documents__actions">
+      <button type="button" class="btn btn-ghost">Share space</button>
+      <button type="button" class="btn btn-primary">Upload document</button>
+    </div>
+  </header>
+
+  <section class="documents__summary">
+    <article class="summary-card">
+      <h2>{{ totalDocuments }}</h2>
+      <p>Total documents</p>
+      <span>{{ recentlyUpdatedDocuments }} updated this week</span>
+    </article>
+    <article class="summary-card">
+      <h2>{{ mandatoryDocuments }}</h2>
+      <p>Mandatory policies</p>
+      <span>Must acknowledge each quarter</span>
+    </article>
+    <article class="summary-card">
+      <h2>{{ needsReviewCount }}</h2>
+      <p>Awaiting legal review</p>
+      <span>Route to compliance partner</span>
+    </article>
+  </section>
+
+  <div class="documents__filters">
+    <div class="chip-group">
+      <button
+        type="button"
+        class="chip"
+        *ngFor="let filter of filters"
+        [class.chip--active]="selectedFilter === filter.id"
+        (click)="setFilter(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+    <button type="button" class="btn btn-outline">Export index</button>
+  </div>
+
+  <section class="documents__list" *ngIf="filteredDocuments.length; else empty">
+    <article class="document-card" *ngFor="let doc of filteredDocuments">
+      <header>
+        <div>
+          <h3>{{ doc.title }}</h3>
+          <p>{{ doc.owner }} · {{ doc.category }}</p>
+        </div>
+        <span class="status" [ngClass]="doc.status.replace(' ', '-').toLowerCase()">{{ doc.status }}</span>
+      </header>
+
+      <dl class="meta">
+        <div>
+          <dt>Version</dt>
+          <dd>{{ doc.version }}</dd>
+        </div>
+        <div>
+          <dt>Last updated</dt>
+          <dd>{{ doc.lastUpdated | date: 'MMM d, y' }}</dd>
+        </div>
+        <div>
+          <dt>File size</dt>
+          <dd>{{ doc.size }}</dd>
+        </div>
+        <div>
+          <dt>Compliance</dt>
+          <dd>{{ doc.compliance }}</dd>
+        </div>
+      </dl>
+
+      <div class="tags">
+        <span class="tag" *ngFor="let tag of doc.tags">{{ tag }}</span>
+      </div>
+
+      <footer>
+        <button type="button" class="btn-light">Preview</button>
+        <button type="button" class="btn-outline">Request acknowledgement</button>
+        <button type="button" class="btn-link">View activity</button>
+      </footer>
+    </article>
+  </section>
+
+  <ng-template #empty>
+    <section class="documents__empty">
+      <h3>No documents in this category yet</h3>
+      <p>Upload policy PDFs or drop placeholders for upcoming launches.</p>
+    </section>
+  </ng-template>
+</section>

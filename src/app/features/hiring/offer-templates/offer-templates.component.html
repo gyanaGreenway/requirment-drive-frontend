@@ -1,0 +1,115 @@
+<section class="templates">
+  <header class="templates__header">
+    <div>
+      <h1>Offer Templates</h1>
+      <p>Standardize your offers with pre-approved language, workflows, and policy links.</p>
+    </div>
+    <div class="templates__actions">
+      <button type="button" class="btn btn-ghost">Import from Word</button>
+      <button type="button" class="btn btn-primary">
+        <span aria-hidden="true">＋</span>
+        Draft new template
+      </button>
+    </div>
+  </header>
+
+  <section class="templates__summary">
+    <article class="summary-card">
+      <p class="summary-card__label">Templates library</p>
+      <h3>{{ totalTemplates }}</h3>
+      <span class="summary-card__hint">Avg usage YTD {{ avgUsage }} times</span>
+    </article>
+    <article class="summary-card">
+      <p class="summary-card__label">Published</p>
+      <h3>{{ publishedCount }}</h3>
+      <span class="summary-card__hint">Ready for recruiters</span>
+    </article>
+    <article class="summary-card">
+      <p class="summary-card__label">Pending legal review</p>
+      <h3>{{ pendingReviewCount }}</h3>
+      <span class="summary-card__hint">Keep compliance fresh</span>
+    </article>
+    <article class="summary-card">
+      <p class="summary-card__label">Drafts</p>
+      <h3>{{ draftCount }}</h3>
+      <span class="summary-card__hint">Finish and publish soon</span>
+    </article>
+  </section>
+
+  <div class="templates__filters">
+    <button
+      type="button"
+      class="chip"
+      *ngFor="let filter of filters"
+      [class.chip--active]="selectedFilter === filter.id"
+      (click)="setFilter(filter.id)"
+    >
+      {{ filter.label }}
+    </button>
+  </div>
+
+  <section class="templates__grid" *ngIf="filteredTemplates.length; else emptyState">
+    <article class="template-card" *ngFor="let template of filteredTemplates">
+      <header class="template-card__header">
+        <div>
+          <h2>{{ template.name }}</h2>
+          <p>{{ template.category }} template</p>
+        </div>
+        <span [ngClass]="getStatusBadge(template.status)">{{ template.status }}</span>
+      </header>
+
+      <p class="template-card__description">{{ template.description }}</p>
+
+      <dl class="template-card__meta">
+        <div>
+          <dt>Last updated</dt>
+          <dd>{{ template.lastUpdated | date: 'EEE, MMM d • HH:mm' }}</dd>
+        </div>
+        <div>
+          <dt>Owner</dt>
+          <dd>{{ template.owner }}</dd>
+        </div>
+        <div>
+          <dt>Version</dt>
+          <dd>{{ template.version }}</dd>
+        </div>
+        <div>
+          <dt>Usage YTD</dt>
+          <dd>{{ template.usageCountYtd }}</dd>
+        </div>
+        <div>
+          <dt>Workflow</dt>
+          <dd>{{ template.approvalWorkflow }}</dd>
+        </div>
+        <div>
+          <dt>Linked policies</dt>
+          <dd>{{ template.linkedPolicies }}</dd>
+        </div>
+      </dl>
+
+      <footer class="template-card__footer">
+        <span>{{ getNextReviewLabel(template.nextReviewOn) }}</span>
+        <div class="template-card__actions">
+          <button type="button" class="btn-light">Preview template</button>
+          <button type="button" class="btn-outline">Share with hiring team</button>
+        </div>
+      </footer>
+    </article>
+  </section>
+
+  <ng-template #emptyState>
+    <section class="templates__empty">
+      <h3>No templates under this filter</h3>
+      <p>Switch views or create a new template to expand your library.</p>
+    </section>
+  </ng-template>
+
+  <section class="templates__roadmap">
+    <h2>Coming soon</h2>
+    <ul>
+      <li>Clause-level version history with change tracking.</li>
+      <li>Auto-redline comparison against legal master copies.</li>
+      <li>Localization packs for UK, EU, and APAC compliance.</li>
+    </ul>
+  </section>
+</section>

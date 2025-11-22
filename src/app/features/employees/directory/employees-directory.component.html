@@ -1,0 +1,129 @@
+<section class="directory-view">
+  <header class="hero">
+    <div class="hero-copy">
+      <h1>Employee Directory</h1>
+      <p>{{ narrative }}</p>
+      <div class="search-bar">
+        <label for="directory-search">Search people</label>
+        <input
+          id="directory-search"
+          type="search"
+          placeholder="Search by name, role, skill, or location"
+          [(ngModel)]="searchTerm"
+        />
+      </div>
+    </div>
+    <div class="hero-actions">
+      <div class="action-card">
+        <h2>People Ops digest</h2>
+        <p>Export-ready snapshot covering headcount moves, upcoming onboarding, and leave calendars.</p>
+        <div class="actions">
+          <button type="button">Download CSV</button>
+          <button type="button" class="ghost">Share with leaders</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="metric-deck">
+    <article class="metric-card" *ngFor="let metric of metrics">
+      <header>
+        <span class="metric-label">{{ metric.label }}</span>
+        <span class="metric-delta" [ngClass]="'metric-delta--' + metric.trend">{{ metric.delta }}</span>
+      </header>
+      <strong>{{ metric.value }}</strong>
+    </article>
+  </section>
+
+  <section class="filters">
+    <div class="filter-group">
+      <span class="filter-heading">Org area</span>
+      <button
+        type="button"
+        class="filter-button"
+        *ngFor="let filter of departmentFilters"
+        [class.active]="selectedDepartment === filter.id"
+        (click)="setDepartment(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-heading">Region</span>
+      <button
+        type="button"
+        class="filter-button"
+        *ngFor="let filter of locationFilters"
+        [class.active]="selectedRegion === filter.id"
+        (click)="setRegion(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-heading">Status</span>
+      <button
+        type="button"
+        class="filter-button"
+        *ngFor="let filter of statusFilters"
+        [class.active]="selectedStatus === filter.id"
+        (click)="setStatus(filter.id)"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+  </section>
+
+  <section class="directory-grid">
+    <article class="profile-card" *ngFor="let employee of filteredEmployees; trackBy: trackByEmployeeId">
+      <header class="profile-header">
+        <div>
+          <h2>{{ employee.name }}</h2>
+          <p class="role">{{ employee.role }} · {{ employee.department }}</p>
+        </div>
+        <span [ngClass]="getStatusPill(employee.status)">{{ employee.status }}</span>
+      </header>
+
+      <div class="profile-body">
+        <div class="profile-meta">
+          <span class="meta-label">Location</span>
+          <p>{{ employee.location }}</p>
+        </div>
+        <div class="profile-meta">
+          <span class="meta-label">Manager</span>
+          <p>{{ employee.manager }}</p>
+        </div>
+        <div class="profile-meta">
+          <span class="meta-label">Tenure</span>
+          <p>{{ getTenureLabel(employee) }}</p>
+        </div>
+        <div class="profile-meta">
+          <span class="meta-label">Email</span>
+          <p>{{ employee.email }}</p>
+        </div>
+      </div>
+
+      <div class="profile-projects">
+        <span class="meta-label">Strategic projects</span>
+        <ul>
+          <li *ngFor="let project of employee.projects">{{ project }}</li>
+        </ul>
+      </div>
+
+      <footer class="profile-footer">
+        <span class="meta-label">Skills</span>
+        <div class="skill-badges">
+          <span class="skill" *ngFor="let skill of employee.skills">{{ skill }}</span>
+        </div>
+      </footer>
+    </article>
+  </section>
+
+  <section class="empty-state" *ngIf="!filteredEmployees.length">
+    <div class="empty-card">
+      <h3>No profiles match the current filters</h3>
+      <p>Try broadening filters or clearing the search to explore the full workforce roster.</p>
+      <button type="button" (click)="setDepartment('all'); setRegion('all'); setStatus('all'); searchTerm = ''">Reset filters</button>
+    </div>
+  </section>
+</section>

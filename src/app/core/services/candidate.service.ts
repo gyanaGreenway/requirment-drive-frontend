@@ -11,8 +11,12 @@ import { PagedResult } from '../../shared/models/paged-result.model';
 export class CandidateService {
   constructor(private api: ApiService) {}
 
-  getCandidates(pageNumber: number = 1, pageSize: number = 10): Observable<PagedResult<Candidate>> {
-    return this.api.get<PagedResult<Candidate>>('Candidates', { pageNumber, pageSize });
+  getCandidates(pageNumber: number = 1, pageSize: number = 10, searchTerm?: string): Observable<PagedResult<Candidate>> {
+    const params: Record<string, any> = { pageNumber, pageSize };
+    if (searchTerm && searchTerm.trim()) {
+      params['searchTerm'] = searchTerm.trim();
+    }
+    return this.api.get<PagedResult<Candidate>>('Candidates', params);
   }
 
   getCandidate(id: number): Observable<Candidate> {
