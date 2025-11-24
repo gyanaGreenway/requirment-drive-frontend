@@ -83,6 +83,15 @@
 	gap: 10px;
 }
 
+.calendar__state {
+	background: rgba(59, 130, 246, 0.12);
+	border-radius: 10px;
+	padding: 10px 14px;
+	color: #1d4ed8;
+	font-size: 0.82rem;
+	font-weight: 600;
+}
+
 .filter-chip {
 	border: 1px solid #dbe3f5;
 	background: #fff;

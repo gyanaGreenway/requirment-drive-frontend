@@ -25,6 +25,13 @@
     </button>
   </div>
 
+  <div class="offers__state" *ngIf="loading">
+    Loading offer activity…
+  </div>
+  <div class="alert alert-danger" role="alert" *ngIf="!loading && error">
+    {{ error }}
+  </div>
+
   <section class="offers__summary">
     <article class="summary-card">
       <p class="summary-card__label">Active offers</p>
@@ -49,10 +56,10 @@
   </section>
 
   <section class="offers__list" *ngIf="filteredOffers.length; else emptyState">
-    <article class="offer-card" *ngFor="let offer of filteredOffers">
+    <article class="offer-card" *ngFor="let offer of filteredOffers; trackBy: trackByOfferId">
       <header class="offer-card__header">
         <div>
-          <h2>{{ offer.candidate }}</h2>
+          <h2>{{ offer.candidateName }}</h2>
           <p>{{ offer.role }} · {{ offer.location }}</p>
         </div>
         <span [ngClass]="getTimelineBadge(offer.status)">{{ offer.status }}</span>
@@ -78,11 +85,19 @@
             <div class="confidence-meter__bar">
               <span class="confidence-meter__fill" [style.width]="getProbabilityWidth(offer.acceptanceProbability)"></span>
             </div>
-            <strong>{{ offer.acceptanceProbability * 100 | number: '1.0-0' }}%</strong>
+            <strong>{{ getAcceptancePercent(offer.acceptanceProbability) }}%</strong>
           </div>
           <div class="confidence-meta">
             <span>Attachments {{ offer.attachments }}</span>
-            <a [href]="offer.offerLink" target="_blank" rel="noopener" class="btn-link">View offer packet</a>
+            <a
+              *ngIf="offer.offerLink"
+              [href]="offer.offerLink"
+              target="_blank"
+              rel="noopener"
+              class="btn-link"
+            >
+              View offer packet
+            </a>
           </div>
         </div>
       </div>

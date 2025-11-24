@@ -319,3 +319,20 @@
 	font-size: 0.78rem;
 	color: #465266;
 }
+
+.feedback__state {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 14px 18px;
+	border-radius: 14px;
+	background: rgba(37, 99, 235, 0.08);
+	color: #1d4ed8;
+	font-size: 0.82rem;
+}
+
+.feedback__state--error {
+	background: rgba(239, 68, 68, 0.1);
+	color: #b91c1c;
+	justify-content: space-between;
+}

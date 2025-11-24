@@ -1,26 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { InterviewService } from '../../../core/services/interview.service';
+import {
+  InterviewCalendarEvent,
+  InterviewCalendarFilter,
+  InterviewCalendarResponse,
+  InterviewTimeframe
+} from '../../../shared/models/interview.model';
 
-type FilterOption = 'today' | 'week' | 'month' | 'all';
-
-interface InterviewEvent {
-  id: string;
-  candidate: string;
-  role: string;
-  stage: string;
-  interviewer: string;
-  dateTime: Date;
-  duration: string;
-  location: string;
-  type: 'Virtual' | 'In person';
-  meetingLink?: string;
-  notes?: string;
-}
-
-interface InterviewGroup {
-  date: Date;
-  items: InterviewEvent[];
-}
+type InterviewGroup = { date: Date; items: InterviewCalendarEvent[] };
 
 @Component({
   selector: 'app-interview-calendar',
@@ -29,100 +17,38 @@ interface InterviewGroup {
   templateUrl: './interview-calendar.component.html',
   styleUrls: ['./interview-calendar.component.css']
 })
-export class InterviewCalendarComponent {
-  readonly filterOptions: { id: FilterOption; label: string }[] = [
+export class InterviewCalendarComponent implements OnInit {
+  readonly filterOptions: { id: InterviewTimeframe; label: string }[] = [
     { id: 'today', label: 'Today' },
     { id: 'week', label: 'This Week' },
     { id: 'month', label: 'This Month' },
     { id: 'all', label: 'All Upcoming' }
   ];
 
-  selectedTimeframe: FilterOption = 'week';
+  selectedTimeframe: InterviewTimeframe = 'week';
+  interviews: InterviewCalendarEvent[] = [];
+  loading = false;
+  error: string | null = null;
+  lastRefreshed: Date | null = null;
 
-  readonly interviews: InterviewEvent[] = [
-    {
-      id: 'INT-3011',
-      candidate: 'Mamta Sharma',
-      role: 'Senior React Engineer',
-      stage: 'Panel Interview',
-      interviewer: 'Anita Desai',
-      dateTime: new Date('2025-11-24T10:00:00'),
-      duration: '60 mins',
-      location: 'Zoom',
-      type: 'Virtual',
-      meetingLink: 'https://meet.example.com/react-panel'
-    },
-    {
-      id: 'INT-3012',
-      candidate: 'Ranjan Patnaik',
-      role: 'Node.js Engineer',
-      stage: 'Technical Screen',
-      interviewer: 'Joel Mathews',
-      dateTime: new Date('2025-11-24T14:30:00'),
-      duration: '45 mins',
-      location: 'Teams',
-      type: 'Virtual',
-      meetingLink: 'https://meet.example.com/node-screen',
-      notes: 'Share coding exercise link 10 mins before call.'
-    },
-    {
-      id: 'INT-3013',
-      candidate: 'Priya Malik',
-      role: 'Product Designer',
-      stage: 'Portfolio Review',
-      interviewer: 'Suresh Batra',
-      dateTime: new Date('2025-11-25T11:00:00'),
-      duration: '30 mins',
-      location: 'HQ - Collaboration Room 2',
-      type: 'In person'
-    },
-    {
-      id: 'INT-3014',
-      candidate: 'Miguel Torres',
-      role: 'QA Lead',
-      stage: 'Manager Round',
-      interviewer: 'Divya Sinha',
-      dateTime: new Date('2025-11-26T09:30:00'),
-      duration: '45 mins',
-      location: 'HQ - Conf Room 5',
-      type: 'In person',
-      notes: 'Provide onsite visitor badge at reception.'
-    },
-    {
-      id: 'INT-3015',
-      candidate: 'Louise Chen',
-      role: 'Data Scientist',
-      stage: 'Final Round',
-      interviewer: 'Hrishikesh Rao',
-      dateTime: new Date('2025-11-28T16:00:00'),
-      duration: '60 mins',
-      location: 'Zoom',
-      type: 'Virtual',
-      meetingLink: 'https://meet.example.com/data-final'
-    },
-    {
-      id: 'INT-3016',
-      candidate: 'Nia Johnson',
-      role: 'People Partner',
-      stage: 'HR Conversation',
-      interviewer: 'Himanshu Nayak',
-      dateTime: new Date('2025-12-04T13:00:00'),
-      duration: '30 mins',
-      location: 'Teams',
-      type: 'Virtual',
-      meetingLink: 'https://meet.example.com/hr-conversation'
+  constructor(private interviewService: InterviewService) {}
+
+  ngOnInit(): void {
+    this.loadInterviews();
+  }
+
+  setTimeframe(filter: InterviewTimeframe): void {
+    if (this.selectedTimeframe === filter) {
+      return;
     }
-  ];
-
-  setTimeframe(filter: FilterOption): void {
     this.selectedTimeframe = filter;
+    this.loadInterviews();
   }
 
   get groupedInterviews(): InterviewGroup[] {
     const filtered = this.getFilteredInterviews();
+    const groups = new Map<string, InterviewCalendarEvent[]>();
 
-    // Groups interviews by calendar date to keep template bindings efficient.
-    const groups = new Map<string, InterviewEvent[]>();
     filtered.forEach(event => {
       const key = this.toDateKey(event.dateTime);
       const existing = groups.get(key) ?? [];
@@ -149,17 +75,53 @@ export class InterviewCalendarComponent {
   }
 
   get awaitingFeedback(): number {
-    return this.interviews.filter(event => event.stage.toLowerCase().includes('review')).length;
+    return this.interviews.filter(event => event.stage?.toLowerCase().includes('review') ?? false).length;
   }
 
-  get nextInterview(): InterviewEvent | undefined {
+  get nextInterview(): InterviewCalendarEvent | undefined {
     const upcoming = this.interviews
       .filter(event => event.dateTime >= new Date())
       .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
     return upcoming[0];
   }
 
-  private getFilteredInterviews(): InterviewEvent[] {
+  trackByGroup(index: number, group: InterviewGroup): string {
+    return group?.date?.toISOString() ?? `group-${index}`;
+  }
+
+  trackByInterview(index: number, interview: InterviewCalendarEvent): string {
+    return interview?.id ?? `interview-${index}`;
+  }
+
+  private loadInterviews(): void {
+    const filter: InterviewCalendarFilter = { timeframe: this.selectedTimeframe };
+    this.loading = true;
+    this.error = null;
+
+    this.interviewService.getCalendarEvents(filter).subscribe({
+      next: (response: InterviewCalendarResponse) => {
+        this.interviews = response.events.map(event => ({
+          ...event,
+          candidate: event.candidate ?? 'Pending candidate',
+          role: event.role ?? 'Role TBD',
+          stage: event.stage ?? 'Interview stage',
+          interviewer: event.interviewer ?? 'Panel',
+          duration: event.duration ?? (event.durationMinutes ? `${event.durationMinutes} mins` : '—'),
+          location: event.location ?? (event.type === 'Virtual' ? 'Virtual meeting' : 'Onsite')
+        }));
+        this.lastRefreshed = response.generatedAt ?? new Date();
+        this.loading = false;
+      },
+      error: err => {
+        console.error('Failed to load interview calendar', err);
+        this.error = 'Unable to load interviews. Please try again soon.';
+        this.interviews = [];
+        this.loading = false;
+      }
+    });
+  }
+
+  private getFilteredInterviews(): InterviewCalendarEvent[] {
     const now = new Date();
     const startToday = this.startOfDay(now);
     const endToday = this.endOfDay(now);

@@ -51,8 +51,8 @@
   <section class="new-hires__next" *ngIf="nextStarting as upcoming">
     <div>
       <span class="next__label">Next to join</span>
-      <h2>{{ upcoming.name }}</h2>
-      <p>{{ upcoming.role }} · {{ upcoming.location }}</p>
+      <h2>{{ upcoming.candidateName }}</h2>
+      <p>{{ upcoming.jobTitle }}</p>
     </div>
     <div class="next__meta">
       <span class="next__countdown" *ngIf="daysUntilStart(upcoming.startDate) >= 0">
@@ -72,8 +72,8 @@
     <article class="hire-card" *ngFor="let hire of filteredHires">
       <header class="hire-card__header">
         <div>
-          <h3>{{ hire.name }}</h3>
-          <p>{{ hire.role }} · {{ hire.location }}</p>
+          <h3>{{ hire.candidateName }}</h3>
+          <p>{{ hire.jobTitle }}</p>
         </div>
         <span [ngClass]="getStatusBadge(hire.status)">{{ hire.status }}</span>
       </header>
@@ -88,7 +88,7 @@
       <div class="hire-card__progress">
         <span>Checklist completion</span>
         <div class="progress">
-          <span class="progress__fill" [style.width]="getProgressWidth(hire.checklistCompletion)"></span>
+          <span class="progress__fill" [style.width]="getProgressWidth(hire.checklistCompletion ?? 0)"></span>
         </div>
         <strong>{{ hire.checklistCompletion }}%</strong>
       </div>

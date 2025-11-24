@@ -1,25 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { OfferService } from '../../../core/services/offer.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { OfferLetter, OfferStatus } from '../../../shared/models/offer.model';
+import { PagedResult } from '../../../shared/models/paged-result.model';
 
-type OfferStatus = 'Accepted' | 'Pending' | 'Negotiation' | 'Draft';
-type OfferFilter = 'all' | 'accepted' | 'pending' | 'negotiation' | 'draft';
-
-interface OfferLetter {
-  id: string;
-  candidate: string;
-  role: string;
-  recruiter: string;
-  sentOn: Date;
-  targetStart: Date;
-  status: OfferStatus;
-  lastTouched: Date;
-  compensation: string;
-  location: string;
-  attachments: number;
-  notes: string;
-  acceptanceProbability: number; // 0-1 scale
-  offerLink: string;
-}
+type OfferViewFilter = 'all' | 'accepted' | 'pending' | 'negotiation' | 'draft';
 
 @Component({
   selector: 'app-offer-letters',
@@ -28,8 +14,8 @@ interface OfferLetter {
   templateUrl: './offer-letters.component.html',
   styleUrls: ['./offer-letters.component.css']
 })
-export class OfferLettersComponent {
-  readonly filters: { id: OfferFilter; label: string }[] = [
+export class OfferLettersComponent implements OnInit {
+  readonly filters: { id: OfferViewFilter; label: string }[] = [
     { id: 'all', label: 'All offers' },
     { id: 'accepted', label: 'Accepted' },
     { id: 'pending', label: 'Awaiting signature' },
@@ -37,91 +23,59 @@ export class OfferLettersComponent {
     { id: 'draft', label: 'Drafts' }
   ];
 
-  selectedFilter: OfferFilter = 'all';
+  selectedFilter: OfferViewFilter = 'all';
 
-  readonly offers: OfferLetter[] = [
-    {
-      id: 'OFF-1021',
-      candidate: 'Priya Sharma',
-      role: 'Lead Data Analyst',
-      recruiter: 'Anita Desai',
-      sentOn: new Date('2025-11-18'),
-      targetStart: new Date('2026-01-06'),
-      status: 'Accepted',
-      lastTouched: new Date('2025-11-21'),
-      compensation: '₹28 LPA · 0.15% ESOP',
-      location: 'Hybrid · Bengaluru',
-      attachments: 3,
-      notes: 'BGV underway. IT assets provisioning kicked off.',
-      acceptanceProbability: 0.95,
-      offerLink: 'https://example.com/offers/1021'
-    },
-    {
-      id: 'OFF-1024',
-      candidate: 'Martin Blake',
-      role: 'QA Automation Engineer',
-      recruiter: 'Divya Sinha',
-      sentOn: new Date('2025-11-20'),
-      targetStart: new Date('2026-01-20'),
-      status: 'Negotiation',
-      lastTouched: new Date('2025-11-22'),
-      compensation: '$118K base · 10% bonus',
-      location: 'Remote · US EST',
-      attachments: 2,
-      notes: 'Counter offer shared. Revisit salary band with finance.',
-      acceptanceProbability: 0.6,
-      offerLink: 'https://example.com/offers/1024'
-    },
-    {
-      id: 'OFF-1026',
-      candidate: 'Jessica Lee',
-      role: 'Senior Product Manager',
-      recruiter: 'Hrishikesh Rao',
-      sentOn: new Date('2025-11-21'),
-      targetStart: new Date('2026-02-03'),
-      status: 'Pending',
-      lastTouched: new Date('2025-11-21'),
-      compensation: '$145K base · 15% bonus · 20K RSUs',
-      location: 'Hybrid · Singapore',
-      attachments: 4,
-      notes: 'Candidate reviewing relocation benefits. Follow-up call Monday.',
-      acceptanceProbability: 0.78,
-      offerLink: 'https://example.com/offers/1026'
-    },
-    {
-      id: 'OFF-1030',
-      candidate: 'Nikhil Jain',
-      role: 'Platform Architect',
-      recruiter: 'Joel Mathews',
-      sentOn: new Date('2025-11-23'),
-      targetStart: new Date('2026-02-17'),
-      status: 'Draft',
-      lastTouched: new Date('2025-11-23'),
-      compensation: '₹42 LPA · Joining bonus ₹3L',
-      location: 'Remote · India',
-      attachments: 1,
-      notes: 'Waiting for final approval from CTO to send.',
-      acceptanceProbability: 0.4,
-      offerLink: 'https://example.com/offers/1030'
-    }
-  ];
+  offers: OfferLetter[] = [];
+  filteredOffers: OfferLetter[] = [];
+  pagedResult: PagedResult<OfferLetter> | null = null;
+  loading = false;
+  error: string | null = null;
+  lastRefreshed: Date | null = null;
 
   readonly statusThemes: Record<OfferStatus, string> = {
     Accepted: 'accepted',
     Pending: 'pending',
     Negotiation: 'negotiation',
-    Draft: 'draft'
+    Draft: 'draft',
+    Declined: 'declined',
+    Withdrawn: 'withdrawn',
+    Expired: 'expired'
   };
 
-  setFilter(filter: OfferFilter): void {
-    this.selectedFilter = filter;
+  constructor(private offersService: OfferService, private toast: ToastService) {}
+
+  ngOnInit(): void {
+    this.loadOffers();
   }
 
-  get filteredOffers(): OfferLetter[] {
-    if (this.selectedFilter === 'all') {
-      return this.offers;
-    }
-    return this.offers.filter(offer => offer.status.toLowerCase() === this.selectedFilter);
+  loadOffers(): void {
+    this.loading = true;
+    this.error = null;
+    this.offersService.getOffers({ pageNumber: 1, pageSize: 25 }).subscribe({
+      next: result => {
+        this.pagedResult = result;
+        this.offers = (result.items ?? []).map(item => this.prepareOffer(item));
+        this.lastRefreshed = new Date();
+        this.applyFilter();
+        this.loading = false;
+      },
+      error: err => {
+        console.error('Failed to load offer letters', err);
+        this.error = 'Failed to load offer letters. Please try again.';
+        this.toast.error(this.error, 4000, true);
+        this.loading = false;
+      }
+    });
+  }
+
+  setFilter(filter: OfferViewFilter): void {
+    if (this.selectedFilter === filter) return;
+    this.selectedFilter = filter;
+    this.applyFilter();
+  }
+
+  trackByOfferId(index: number, offer: OfferLetter): string {
+    return offer?.id ?? `offer-${index}`;
   }
 
   get totalOffers(): number {
@@ -129,25 +83,25 @@ export class OfferLettersComponent {
   }
 
   get acceptedCount(): number {
-    return this.offers.filter(offer => offer.status === 'Accepted').length;
+    return this.countOffersByStatus('Accepted');
   }
 
   get pendingCount(): number {
-    return this.offers.filter(offer => offer.status === 'Pending').length;
+    return this.countOffersByStatus('Pending');
   }
 
   get negotiationCount(): number {
-    return this.offers.filter(offer => offer.status === 'Negotiation').length;
+    return this.countOffersByStatus('Negotiation');
   }
 
   get draftCount(): number {
-    return this.offers.filter(offer => offer.status === 'Draft').length;
+    return this.countOffersByStatus('Draft');
   }
 
   get activePipelineValue(): string {
     const baseValues = this.offers
       .filter(offer => offer.status !== 'Draft')
-      .map(offer => this.estimateValue(offer.compensation));
+      .map(offer => this.estimateValue(offer.compensation ?? ''));
     const total = baseValues.reduce((acc, value) => acc + value, 0);
     return total ? this.formatCurrency(total) : '—';
   }
@@ -157,7 +111,7 @@ export class OfferLettersComponent {
     if (!activeOffers.length) {
       return 0;
     }
-    const totalConfidence = activeOffers.reduce((acc, offer) => acc + offer.acceptanceProbability, 0);
+    const totalConfidence = activeOffers.reduce((acc, offer) => acc + (offer.acceptanceProbability ?? 0), 0);
     return Number(((totalConfidence / activeOffers.length) * 100).toFixed(0));
   }
 
@@ -166,18 +120,145 @@ export class OfferLettersComponent {
       return 0;
     }
     const mostRecent = this.offers
-      .map(offer => offer.sentOn)
+      .map(offer => this.toDate(offer.sentOn))
+      .filter((date): date is Date => !!date)
       .sort((a, b) => b.getTime() - a.getTime())[0];
+    if (!mostRecent) {
+      return 0;
+    }
     const diffInMs = new Date().getTime() - mostRecent.getTime();
     return Math.max(Math.floor(diffInMs / (1000 * 60 * 60 * 24)), 0);
   }
 
-  getTimelineBadge(status: OfferStatus): string {
-    return `status-pill status-pill--${this.statusThemes[status]}`;
+  getTimelineBadge(status: OfferStatus | string | null | undefined): string {
+    const normalized = this.normalizeOfferStatus(status);
+    const theme = this.statusThemes[normalized] ?? 'pending';
+    return `status-pill status-pill--${theme}`;
   }
 
-  getProbabilityWidth(probability: number): string {
-    return `${Math.round(probability * 100)}%`;
+  getProbabilityWidth(probability: number | null | undefined): string {
+    return `${Math.round((probability ?? 0) * 100)}%`;
+  }
+
+  getAcceptancePercent(probability: number | null | undefined): number {
+    return Math.round((probability ?? 0) * 100);
+  }
+
+  private applyFilter(): void {
+    if (this.selectedFilter === 'all') {
+      this.filteredOffers = [...this.offers];
+      return;
+    }
+
+    this.filteredOffers = this.offers.filter(offer => this.mapStatusToFilter(offer.status) === this.selectedFilter);
+  }
+
+  private countOffersByStatus(status: OfferStatus): number {
+    return this.offers.filter(offer => this.normalizeOfferStatus(offer.status) === status).length;
+  }
+
+  private prepareOffer(offer: OfferLetter): OfferLetter {
+    const normalizedStatus = this.normalizeOfferStatus(offer.status);
+    const candidateName = offer.candidateName?.trim() || 'Unknown candidate';
+    const recruiterName = (offer.recruiter ?? offer.recruiterName ?? '').toString().trim() || 'Hiring team';
+    const notesValue = typeof offer.notes === 'string' ? offer.notes.trim() : '';
+
+    return {
+      ...offer,
+      candidateName,
+      recruiter: recruiterName,
+      recruiterName,
+      status: normalizedStatus,
+      sentOn: this.toDate(offer.sentOn),
+      targetStart: this.toDate(offer.targetStart),
+      lastTouched: this.toDate(offer.lastTouched),
+      acceptanceProbability: this.normalizeProbability(offer.acceptanceProbability),
+      attachments: offer.attachments ?? 0,
+      compensation: offer.compensation ?? '—',
+      location: offer.location ?? '—',
+      notes: notesValue || 'No notes added yet.',
+      offerLink: offer.offerLink ?? undefined
+    };
+  }
+
+  private mapStatusToFilter(status: OfferStatus | string | null | undefined): OfferViewFilter {
+    const normalized = this.normalizeOfferStatus(status);
+    switch (normalized) {
+      case 'Accepted':
+        return 'accepted';
+      case 'Negotiation':
+        return 'negotiation';
+      case 'Draft':
+        return 'draft';
+      case 'Pending':
+      default:
+        return 'pending';
+    }
+  }
+
+  private normalizeOfferStatus(status: OfferStatus | string | null | undefined): OfferStatus {
+    if (!status) {
+      return 'Pending';
+    }
+    const text = status.toString().trim().toLowerCase();
+    const lookup: Record<string, OfferStatus> = {
+      accepted: 'Accepted',
+      signed: 'Accepted',
+      pending: 'Pending',
+      awaiting: 'Pending',
+      negotiation: 'Negotiation',
+      negotiating: 'Negotiation',
+      draft: 'Draft',
+      drafted: 'Draft',
+      declined: 'Declined',
+      rejected: 'Declined',
+      withdrawn: 'Withdrawn',
+      rescinded: 'Withdrawn',
+      expired: 'Expired',
+      lapsed: 'Expired'
+    };
+    return lookup[text] ?? 'Pending';
+  }
+
+  private normalizeProbability(probability: number | string | null | undefined): number {
+    if (probability === null || probability === undefined) {
+      return 0;
+    }
+    if (typeof probability === 'string') {
+      const trimmed = probability.trim();
+      if (!trimmed) return 0;
+      if (trimmed.endsWith('%')) {
+        const numeric = parseFloat(trimmed.slice(0, -1));
+        if (!Number.isNaN(numeric)) {
+          return this.clampProbability(numeric / 100);
+        }
+      }
+      const parsed = parseFloat(trimmed);
+      if (!Number.isNaN(parsed)) {
+        return this.clampProbability(parsed > 1 ? parsed / 100 : parsed);
+      }
+      return 0;
+    }
+    if (typeof probability === 'number') {
+      return this.clampProbability(probability > 1 ? probability / 100 : probability);
+    }
+    return 0;
+  }
+
+  private toDate(value: Date | string | null | undefined): Date | null {
+    if (!value) return null;
+    if (value instanceof Date) {
+      return isNaN(value.getTime()) ? null : value;
+    }
+    const parsed = new Date(value);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  private clampProbability(value: number): number {
+    if (!Number.isFinite(value)) {
+      return 0;
+    }
+    return Math.max(0, Math.min(1, value));
   }
 
   private estimateValue(compensation: string): number {
@@ -192,7 +273,6 @@ export class OfferLettersComponent {
     const multiplier = unit === 'LPA' ? 100000 : unit === 'K' ? 1000 : unit === 'M' ? 1000000 : 1;
     const value = rawValue * multiplier;
 
-    // Convert rupees to a comparable base (assuming ₹ to $ conversion placeholder 0.012).
     if (symbol === '₹') {
       return value * 0.012;
     }

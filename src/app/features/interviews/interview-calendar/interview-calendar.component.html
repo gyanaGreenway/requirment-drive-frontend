@@ -25,6 +25,13 @@
     </button>
   </div>
 
+  <div class="calendar__state" *ngIf="loading">
+    Syncing your interview agenda…
+  </div>
+  <div class="alert alert-danger" role="alert" *ngIf="!loading && error">
+    {{ error }}
+  </div>
+
   <section class="calendar__summary">
     <article class="summary-card">
       <h3>{{ totalUpcoming }}</h3>
@@ -59,9 +66,9 @@
   </section>
 
   <section class="calendar__list" *ngIf="groupedInterviews.length; else emptyState">
-    <div class="calendar__day" *ngFor="let group of groupedInterviews">
+    <div class="calendar__day" *ngFor="let group of groupedInterviews; trackBy: trackByGroup">
       <h3>{{ group.date | date: 'fullDate' }}</h3>
-      <article class="calendar__event" *ngFor="let interview of group.items; let last = last">
+      <article class="calendar__event" *ngFor="let interview of group.items; let last = last; trackBy: trackByInterview">
         <div class="calendar__event-indicator" [class.calendar__event-indicator--last]="last">
           <span class="calendar__event-dot" aria-hidden="true"></span>
           <span class="calendar__event-line" aria-hidden="true"></span>

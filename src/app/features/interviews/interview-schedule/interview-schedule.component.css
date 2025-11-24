@@ -33,6 +33,15 @@
 	flex-wrap: wrap;
 }
 
+.schedule__state {
+	background: rgba(59, 130, 246, 0.12);
+	border-radius: 12px;
+	padding: 10px 14px;
+	color: #1d4ed8;
+	font-size: 0.82rem;
+	font-weight: 600;
+}
+
 .btn {
 	border-radius: 999px;
 	border: 1px solid transparent;
@@ -66,6 +75,7 @@
 	border-color: rgba(79, 70, 229, 0.35);
 	color: #1f2937;
 }
+
 
 .schedule__layout {
 	display: grid;

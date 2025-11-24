@@ -1,24 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { OnboardingService } from '../../../core/services/onboarding.service';
+import { Onboarding } from '../../../shared/models/onboarding.model';
 
 type OnboardingStatus = 'Preboarding' | 'IT ready' | 'Compliance pending' | 'Ready for Day 1';
 type HireFilter = 'all' | 'starting-soon' | 'needs-it' | 'compliance';
-
-interface NewHireProfile {
-  id: string;
-  name: string;
-  role: string;
-  location: string;
-  startDate: Date;
-  manager: string;
-  buddy: string;
-  status: OnboardingStatus;
-  checklistCompletion: number;
-  tasksDueThisWeek: number;
-  equipmentDispatched: boolean;
-  backgroundCheckClear: boolean;
-  notes: string;
-}
 
 @Component({
   selector: 'app-onboarding-new-hires',
@@ -27,7 +13,7 @@ interface NewHireProfile {
   templateUrl: './onboarding-new-hires.component.html',
   styleUrls: ['./onboarding-new-hires.component.css']
 })
-export class OnboardingNewHiresComponent {
+export class OnboardingNewHiresComponent implements OnInit {
   readonly filters: { id: HireFilter; label: string }[] = [
     { id: 'all', label: 'All hires' },
     { id: 'starting-soon', label: 'Starting in 7 days' },
@@ -36,78 +22,39 @@ export class OnboardingNewHiresComponent {
   ];
 
   selectedFilter: HireFilter = 'all';
+  newHires: Onboarding[] = [];
+  loading = false;
+  error: string | null = null;
 
-  readonly newHires: NewHireProfile[] = [
-    {
-      id: 'NH-2101',
-      name: 'Amit Verma',
-      role: 'Backend Engineer',
-      location: 'Bengaluru · Hybrid',
-      startDate: new Date('2025-12-01'),
-      manager: 'Sonia Mehta',
-      buddy: 'Ravi Patel',
-      status: 'Preboarding',
-      checklistCompletion: 62,
-      tasksDueThisWeek: 3,
-      equipmentDispatched: true,
-      backgroundCheckClear: true,
-      notes: 'Visa extension submitted. Share sprint rituals overview before day 1.'
-    },
-    {
-      id: 'NH-2102',
-      name: 'Sara Khan',
-      role: 'Product Designer',
-      location: 'Remote · Dubai',
-      startDate: new Date('2025-12-05'),
-      manager: 'Joel Mathews',
-      buddy: 'Laila Menon',
-      status: 'IT ready',
-      checklistCompletion: 28,
-      tasksDueThisWeek: 5,
-      equipmentDispatched: false,
-      backgroundCheckClear: true,
-      notes: 'Awaiting MacBook customs clearance. Schedule design systems walkthrough.'
-    },
-    {
-      id: 'NH-2103',
-      name: 'Marcus Lee',
-      role: 'Customer Success Lead',
-      location: 'Singapore · Onsite',
-      startDate: new Date('2025-12-09'),
-      manager: 'Anita Desai',
-      buddy: 'Pooja Nair',
-      status: 'Compliance pending',
-      checklistCompletion: 45,
-      tasksDueThisWeek: 2,
-      equipmentDispatched: true,
-      backgroundCheckClear: false,
-      notes: 'Follow up with vendor for final background check report.'
-    },
-    {
-      id: 'NH-2104',
-      name: 'Luis Romero',
-      role: 'QA Automation Engineer',
-      location: 'Remote · Mexico',
-      startDate: new Date('2025-12-16'),
-      manager: 'Divya Sinha',
-      buddy: 'Hina Kapoor',
-      status: 'Ready for Day 1',
-      checklistCompletion: 90,
-      tasksDueThisWeek: 1,
-      equipmentDispatched: true,
-      backgroundCheckClear: true,
-      notes: 'Day-0 orientation confirmed. Share product release calendar on Friday.'
-    }
-  ];
+  constructor(public onboardingService: OnboardingService) {}
+
+  ngOnInit(): void {
+    this.fetchNewHires();
+  }
+
+  fetchNewHires(): void {
+    this.loading = true;
+    this.onboardingService.getAll({ pageSize: 25 }).subscribe({
+      next: (result: { items: Onboarding[] }) => {
+        this.newHires = result.items;
+        this.loading = false;
+      },
+      error: (err: any) => {
+        this.error = 'Failed to load new hires.';
+        this.loading = false;
+        console.error(err);
+      }
+    });
+  }
 
   setFilter(filter: HireFilter): void {
     this.selectedFilter = filter;
   }
 
-  get filteredHires(): NewHireProfile[] {
+  get filteredHires(): Onboarding[] {
     switch (this.selectedFilter) {
       case 'starting-soon':
-        return this.newHires.filter(hire => this.daysUntilStart(hire.startDate) <= 7);
+        return this.newHires.filter(hire => this.daysUntilStart(new Date(hire.startDate)) <= 7);
       case 'needs-it':
         return this.newHires.filter(hire => !hire.equipmentDispatched);
       case 'compliance':
@@ -117,10 +64,10 @@ export class OnboardingNewHiresComponent {
     }
   }
 
-  get nextStarting(): NewHireProfile | undefined {
+  get nextStarting(): Onboarding | undefined {
     return [...this.newHires]
-      .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
-      .find(hire => this.daysUntilStart(hire.startDate) >= 0);
+      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+      .find(hire => this.daysUntilStart(new Date(hire.startDate)) >= 0);
   }
 
   get totalHires(): number {
@@ -128,7 +75,7 @@ export class OnboardingNewHiresComponent {
   }
 
   get startingSoonCount(): number {
-    return this.newHires.filter(hire => this.daysUntilStart(hire.startDate) <= 7).length;
+    return this.newHires.filter(hire => this.daysUntilStart(new Date(hire.startDate)) <= 7).length;
   }
 
   get itPendingCount(): number {
@@ -140,15 +87,15 @@ export class OnboardingNewHiresComponent {
   }
 
   get averageChecklistCompletion(): number {
-    const total = this.newHires.reduce((acc, hire) => acc + hire.checklistCompletion, 0);
+    const total = this.newHires.reduce((acc, hire) => acc + (hire.checklistCompletion || 0), 0);
     return this.newHires.length ? Math.round(total / this.newHires.length) : 0;
   }
 
   get tasksDueThisWeek(): number {
-    return this.newHires.reduce((acc, hire) => acc + hire.tasksDueThisWeek, 0);
+    return this.newHires.reduce((acc, hire) => acc + (hire.tasksDueThisWeek || 0), 0);
   }
 
-  getStatusBadge(status: OnboardingStatus): string {
+  getStatusBadge(status: string): string {
     return `status-pill status-pill--${status.replace(/\s/g, '-').toLowerCase()}`;
   }
 

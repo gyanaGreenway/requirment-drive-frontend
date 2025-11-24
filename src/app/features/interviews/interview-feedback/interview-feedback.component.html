@@ -22,7 +22,17 @@
     </button>
   </div>
 
-  <section class="feedback__summary">
+  <section class="feedback__state" *ngIf="loading">
+    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+    <p>Loading latest feedback...</p>
+  </section>
+
+  <section class="feedback__state feedback__state--error" *ngIf="!loading && error">
+    <p>{{ error }}</p>
+    <button type="button" class="btn btn-secondary" (click)="reload()">Retry</button>
+  </section>
+
+  <section class="feedback__summary" *ngIf="!loading && !error">
     <article class="summary-card">
       <p class="summary-card__label">Average score</p>
       <h3>{{ averageScore }}</h3>
@@ -45,8 +55,8 @@
     </article>
   </section>
 
-  <section class="feedback__list" *ngIf="filteredFeedback.length; else emptyState">
-    <article class="feedback-card" *ngFor="let entry of filteredFeedback">
+  <section class="feedback__list" *ngIf="!loading && !error && filteredFeedback.length; else emptyState">
+    <article class="feedback-card" *ngFor="let entry of filteredFeedback; trackBy: trackById">
       <header class="feedback-card__header">
         <div>
           <h3>{{ entry.candidate }}</h3>
@@ -98,13 +108,13 @@
   </section>
 
   <ng-template #emptyState>
-    <section class="feedback__empty">
+    <section class="feedback__empty" *ngIf="!loading && !error">
       <h3>No feedback under this filter</h3>
       <p>Change the view or nudge interviewers for pending submissions.</p>
     </section>
   </ng-template>
 
-  <section class="feedback__roadmap">
+  <section class="feedback__roadmap" *ngIf="!loading">
     <h3>Upcoming enhancements</h3>
     <ul>
       <li>Auto-share feedback digest with hiring managers every Friday.</li>

@@ -47,36 +47,21 @@
     <article class="document-card" *ngFor="let upload of filteredUploads">
       <header class="document-card__header">
         <div>
-          <h3>{{ upload.candidate }}</h3>
-          <p>{{ upload.role }}</p>
+          <h3>{{ upload.fileName }}</h3>
+          <p>{{ upload.url }}</p>
         </div>
-        <span [ngClass]="getStatusBadge(upload.status)">{{ upload.status }}</span>
+        <span class="label">Uploaded By</span>
+        <strong>{{ upload.uploadedByName }}</strong>
       </header>
 
       <div class="document-card__meta">
         <div>
-          <span class="label">Document</span>
-          <strong>{{ upload.document }}</strong>
-        </div>
-        <div>
-          <span class="label">Track</span>
-          <strong>{{ upload.track }}</strong>
-        </div>
-        <div>
-          <span class="label">Reviewer</span>
-          <strong>{{ upload.reviewer || 'Not assigned' }}</strong>
-        </div>
-        <div>
-          <span class="label">Requirement</span>
-          <span class="pill">{{ isRequiredLabel(upload) }}</span>
-        </div>
-        <div>
-          <span class="label">Timeline</span>
-          <span [ngClass]="getDueClass(upload)">{{ getDueLabel(upload) }}</span>
+          <span class="label">Uploaded At</span>
+          <strong>{{ upload.uploadedAt | date:'medium' }}</strong>
         </div>
       </div>
 
-      <p class="document-card__notes">{{ upload.notes }}</p>
+      <!-- Notes field not present in OnboardingDocument model -->
 
       <footer class="document-card__footer">
         <button type="button" class="btn-light">View request</button>

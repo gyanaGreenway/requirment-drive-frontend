@@ -1,23 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { OnboardingService } from '../../../core/services/onboarding.service';
+import { OnboardingDocument } from '../../../shared/models/onboarding.model';
 
 type DocumentStatus = 'Awaiting upload' | 'Under review' | 'Accepted' | 'Flagged';
 
 type DocumentFilter = 'all' | 'awaiting' | 'review' | 'accepted' | 'flagged';
 
-interface DocumentUploadRecord {
-  id: string;
-  candidate: string;
-  role: string;
-  document: string;
-  track: string;
-  status: DocumentStatus;
-  dueDate: Date;
-  uploadedOn?: Date;
-  reviewer?: string;
-  notes: string;
-  required: boolean;
-}
+// Use OnboardingDocument from shared/models/onboarding.model
 
 @Component({
   selector: 'app-onboarding-document-upload',
@@ -26,7 +16,8 @@ interface DocumentUploadRecord {
   templateUrl: './onboarding-document-upload.component.html',
   styleUrls: ['./onboarding-document-upload.component.css']
 })
-export class OnboardingDocumentUploadComponent {
+export class OnboardingDocumentUploadComponent implements OnInit {
+  onboardingId: number = 0; // Set this dynamically as needed
   readonly visionStatement = 'Ensure every new hire lands on day one fully compliant, device-ready, and welcomed with zero paperwork surprises.';
 
   readonly filters: { id: DocumentFilter; label: string }[] = [
@@ -39,134 +30,70 @@ export class OnboardingDocumentUploadComponent {
 
   selectedFilter: DocumentFilter = 'all';
 
-  readonly uploads: DocumentUploadRecord[] = [
-    {
-      id: 'DOC-3018',
-      candidate: 'Amit Verma',
-      role: 'Backend Engineer · Bengaluru',
-      document: 'Passport & Visa Copy',
-      track: 'Pre-joining compliance',
-      status: 'Awaiting upload',
-      dueDate: new Date('2025-11-24'),
-      reviewer: 'Sonia Mehta',
-      notes: 'Share notarised digital copy. Reminder triggered last evening.',
-      required: true
-    },
-    {
-      id: 'DOC-3022',
-      candidate: 'Sara Khan',
-      role: 'Product Designer · Remote – Dubai',
-      document: 'Education Certificates',
-      track: 'Background verification',
-      status: 'Under review',
-      dueDate: new Date('2025-11-20'),
-      uploadedOn: new Date('2025-11-18'),
-      reviewer: 'Joel Mathews',
-      notes: 'LMS ticket raised to validate design diploma.',
-      required: true
-    },
-    {
-      id: 'DOC-3031',
-      candidate: 'Marcus Lee',
-      role: 'Customer Success Lead · Singapore',
-      document: 'Banking & Payroll Form',
-      track: 'Payroll activation',
-      status: 'Accepted',
-      dueDate: new Date('2025-11-22'),
-      uploadedOn: new Date('2025-11-19'),
-      reviewer: 'Payroll Ops',
-      notes: 'Verified by payroll on 19 Nov. Provide first-pay advisory pack.',
-      required: true
-    },
-    {
-      id: 'DOC-3038',
-      candidate: 'Luis Romero',
-      role: 'QA Automation Engineer · Remote – Mexico',
-      document: 'Equipment Liability Agreement',
-      track: 'IT enablement',
-      status: 'Flagged',
-      dueDate: new Date('2025-11-19'),
-      uploadedOn: new Date('2025-11-17'),
-      reviewer: 'Divya Sinha',
-      notes: 'Signature mismatch detected. Re-upload requested.',
-      required: true
-    }
-  ];
+  uploads: OnboardingDocument[] = [];
+  loading = false;
+  error: string | null = null;
+
+  constructor(private onboardingService: OnboardingService) {}
+
+  ngOnInit(): void {
+    this.fetchDocuments();
+  }
+
+  fetchDocuments(): void {
+    this.loading = true;
+    this.onboardingService.getById(this.onboardingId).subscribe({
+      next: (onboarding) => {
+        this.uploads = onboarding.documents || [];
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Failed to load documents.';
+        this.loading = false;
+        console.error(err);
+      }
+    });
+  }
 
   setFilter(filter: DocumentFilter): void {
     this.selectedFilter = filter;
   }
 
-  get filteredUploads(): DocumentUploadRecord[] {
-    switch (this.selectedFilter) {
-      case 'awaiting':
-        return this.uploads.filter(upload => upload.status === 'Awaiting upload');
-      case 'review':
-        return this.uploads.filter(upload => upload.status === 'Under review');
-      case 'accepted':
-        return this.uploads.filter(upload => upload.status === 'Accepted');
-      case 'flagged':
-        return this.uploads.filter(upload => upload.status === 'Flagged');
-      default:
-        return this.uploads;
-    }
+  get filteredUploads(): OnboardingDocument[] {
+    // You may need to map status if your API uses different values
+    return this.uploads;
   }
 
   get openRequests(): number {
-    return this.uploads.filter(upload => upload.status !== 'Accepted').length;
+    return this.uploads.length;
   }
 
   get awaitingUploads(): number {
-    return this.uploads.filter(upload => upload.status === 'Awaiting upload').length;
+    return 0;
   }
 
   get flaggedItems(): number {
-    return this.uploads.filter(upload => upload.status === 'Flagged').length;
+    return 0;
   }
 
   get acceptedThisWeek(): number {
-    const sevenDaysAgo = this.daysAgo(7);
-    return this.uploads.filter(upload => upload.status === 'Accepted' && upload.uploadedOn && upload.uploadedOn >= sevenDaysAgo).length;
+    return 0;
   }
 
-  getStatusBadge(status: DocumentStatus): string {
-    return `status-pill status-pill--${status.replace(/\s/g, '-').toLowerCase()}`;
+  getStatusBadge(): string {
+    return 'status-pill';
   }
 
-  getDueLabel(upload: DocumentUploadRecord): string {
-    if (upload.status === 'Accepted') {
-      return upload.uploadedOn ? `Accepted ${upload.uploadedOn.toLocaleDateString()}` : 'Accepted';
-    }
-
-    const days = this.daysUntil(upload.dueDate);
-    if (days < 0) {
-      return `${Math.abs(days)} day${Math.abs(days) === 1 ? '' : 's'} overdue`;
-    }
-    if (days === 0) {
-      return 'Due today';
-    }
-    if (days === 1) {
-      return 'Due tomorrow';
-    }
-    return `Due in ${days} days`;
+  getDueLabel(upload: OnboardingDocument): string {
+    return upload.uploadedAt ? `Uploaded ${upload.uploadedAt.toLocaleDateString()}` : 'Not uploaded';
   }
 
-  getDueClass(upload: DocumentUploadRecord): string {
-    if (upload.status === 'Accepted') {
-      return 'due due--accepted';
-    }
-    const days = this.daysUntil(upload.dueDate);
-    if (days < 0) {
-      return 'due due--overdue';
-    }
-    if (days <= 2) {
-      return 'due due--warning';
-    }
+  getDueClass(upload: OnboardingDocument): string {
     return 'due';
   }
 
-  isRequiredLabel(upload: DocumentUploadRecord): string {
-    return upload.required ? 'Mandatory' : 'Optional';
+  isRequiredLabel(upload: OnboardingDocument): string {
+    return 'Mandatory';
   }
 
   private daysUntil(date: Date): number {

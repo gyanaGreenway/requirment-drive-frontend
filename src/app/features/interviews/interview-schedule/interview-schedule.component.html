@@ -6,9 +6,18 @@
     </div>
     <div class="schedule__header-actions">
       <button type="button" class="btn btn-ghost">Save as draft</button>
-      <button type="submit" form="scheduleForm" class="btn btn-primary">Publish interview</button>
+      <button type="submit" form="scheduleForm" class="btn btn-primary" [disabled]="submitting || metadataLoading">
+        {{ submitting ? 'Publishing…' : 'Publish interview' }}
+      </button>
     </div>
   </header>
+
+  <div class="schedule__state" *ngIf="metadataLoading">
+    Gathering interviewer availability and defaults…
+  </div>
+  <div class="alert alert-danger" role="alert" *ngIf="!metadataLoading && metadataError">
+    {{ metadataError }}
+  </div>
 
   <div class="schedule__layout">
     <form id="scheduleForm" class="schedule__form" (ngSubmit)="schedule()">
@@ -105,15 +114,27 @@
         <div class="form-grid">
           <fieldset class="field field--inline">
             <legend>Format</legend>
-            <label class="pill">
-              <input type="radio" name="locationType" value="virtual" [(ngModel)]="model.locationType" />
-              Virtual
-            </label>
-            <label class="pill">
-              <input type="radio" name="locationType" value="onsite" [(ngModel)]="model.locationType" />
-              Onsite
+            <label class="pill" *ngFor="let option of locationOptions">
+              <input
+                type="radio"
+                name="locationType"
+                [value]="option.id"
+                [(ngModel)]="model.locationType"
+                (ngModelChange)="handleLocationChange($event)"
+              />
+              {{ option.label }}
             </label>
           </fieldset>
+
+          <label class="field" *ngIf="model.locationType === 'virtual' && meetingProviders.length">
+            <span>Meeting provider</span>
+            <select name="meetingProvider" [(ngModel)]="model.meetingProvider">
+              <option *ngFor="let provider of meetingProviders" [value]="provider">
+                {{ formatProvider(provider) }}
+              </option>
+            </select>
+            <small class="field__support">Automatically generates the meeting link for this provider.</small>
+          </label>
 
           <label class="field field--full" *ngIf="model.locationType === 'virtual'">
             <span>Meeting link</span>
@@ -175,6 +196,9 @@
           <li><strong>Interviewers:</strong> {{ model.interviewers.length ? model.interviewers.join(', ') : 'Assign panel' }}</li>
           <li><strong>When:</strong> {{ model.date ? (model.date | date: 'fullDate') : 'Choose date' }} · {{ model.time || '--:--' }} · {{ model.timezone }}</li>
           <li><strong>Format:</strong> {{ model.locationType === 'virtual' ? 'Virtual meeting' : 'Onsite' }}</li>
+          <li *ngIf="model.locationType === 'virtual' && model.meetingProvider">
+            <strong>Provider:</strong> {{ formatProvider(model.meetingProvider) }}
+          </li>
           <li *ngIf="model.locationType === 'virtual' && model.meetingLink"><strong>Link:</strong> {{ model.meetingLink }}</li>
           <li *ngIf="model.locationType === 'onsite' && model.locationDetail"><strong>Location:</strong> {{ model.locationDetail }}</li>
           <li><strong>Reminders:</strong> {{ model.reminders.length ? model.reminders.join(', ') : 'None selected' }}</li>
